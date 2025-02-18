@@ -1,4 +1,4 @@
-﻿USE [SanjeshP_RDC]
+﻿USE [SanjeshP_RDC1]
 GO
 /****** Object:  StoredProcedure [dbo].[Get_GroupAccess_With_CurrentUserAccess_For_TreeCheckBox]    Script Date: 4/23/2024 2:57:03 PM ******/
 SET ANSI_NULLS ON
@@ -159,8 +159,4 @@ FROM         dbo.Menus AS M LEFT OUTER JOIN
                       dbo.AccessMenusGroups AS AMG ON AMG.ListMenuId = M.Id
 WHERE     (M.IsDelete = 0) AND (M.IsActive = 1)
 GO
-
-EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'View_UserMenubar'
-GO
-
 
