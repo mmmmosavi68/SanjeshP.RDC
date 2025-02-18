@@ -10,8 +10,8 @@ using SanjeshP.RDC.Data;
 namespace SanjeshP.RDC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250217052240_InitiDB_14031129")]
-    partial class InitiDB_14031129
+    [Migration("20250218190213_InitializeDb")]
+    partial class InitializeDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -591,6 +591,9 @@ namespace SanjeshP.RDC.Data.Migrations
 
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("ShowMenu")
                         .HasColumnType("bit");

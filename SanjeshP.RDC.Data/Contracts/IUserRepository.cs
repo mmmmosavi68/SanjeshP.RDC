@@ -7,8 +7,9 @@ using System.Threading;
 
 namespace SanjeshP.RDC.Data.Contracts
 {
-    public interface IUserRepository
+    public interface IUserRepository :IEFRepository<User>
     {
+        Task<IEnumerable<User>> GetAll();
         Task<User> GetByUserAndPass(string username, string password, CancellationToken cancellationToken);
         public Task<User> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task AddAsync(User user, string password, CancellationToken cancellationToken);

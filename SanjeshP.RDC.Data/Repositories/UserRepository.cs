@@ -5,6 +5,7 @@ using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.User;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,10 @@ namespace SanjeshP.RDC.Data.Repositories
         {
         }
 
+        public async Task<IEnumerable<User>> GetAll()
+        {
+            return await TableNoTracking.Where(u => u.IsDelete == false).ToListAsync();
+        }
         public Task<User> GetByUserAndPass(string username, string password, CancellationToken cancellationToken)
         {
             var passwordHash = SecurityHelper.GetSha256Hash(password);
@@ -54,6 +59,8 @@ namespace SanjeshP.RDC.Data.Repositories
             user.SecurityStamp = Guid.NewGuid();
             return UpdateAsync(user, cancellationToken);
         }
+
+
         //public override void Update(User entity, bool saveNow = true)
         //{
         //    entity.SecurityStamp = Guid.NewGuid();

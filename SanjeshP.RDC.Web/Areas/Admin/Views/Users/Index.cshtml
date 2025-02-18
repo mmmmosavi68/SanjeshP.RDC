@@ -1,40 +1,24 @@
-﻿@model IEnumerable<SanjeshP.RDC.Entities.User.User>
+﻿@model IEnumerable<SanjeshP.RDC.Web.Areas.Admin.Models.UserViewModel.UserViewModel>
 
 @{
     ViewData["Title"] = "Index";
+    int i = 1;
 }
 
 <h1>Index</h1>
 
 <p>
-    <a asp-area="Admin" asp-controller="Users" asp-action="Create">Create New</a>
+    <a asp-area="Admin" asp-controller="Users" asp-action="Create" class="btn btn-primary"> افزودن کاربر جدید</a>
 </p>
 <table class="table">
     <thead>
         <tr>
+            <th>#</th>
             <th>
                 @Html.DisplayNameFor(model => model.UserName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.NormalizedUserName)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.EmailAddress)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NormalizedEmailAddress)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EmailAddressConfirmed)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SecurityStamp)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConcurrencyStamp)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.PhoneNumber)
@@ -46,20 +30,9 @@
                 @Html.DisplayNameFor(model => model.TwoFactorEnabled)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.LockoutEnd)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LockoutEnabled)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AccessFailedCount)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.IsActive)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDelete)
-            </th>
+           
             <th>
                 @Html.DisplayNameFor(model => model.LastLoginDate)
             </th>
@@ -69,41 +42,19 @@
             <th>
                 @Html.DisplayNameFor(model => model.ExpireDate)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Creator)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.HostIp)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>@i</td>
             <td>
                 @Html.DisplayFor(modelItem => item.UserName)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NormalizedUserName)
-            </td>
+            
             <td>
                 @Html.DisplayFor(modelItem => item.EmailAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NormalizedEmailAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EmailAddressConfirmed)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SecurityStamp)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ConcurrencyStamp)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PhoneNumber)
@@ -115,19 +66,7 @@
                 @Html.DisplayFor(modelItem => item.TwoFactorEnabled)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.LockoutEnd)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LockoutEnabled)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AccessFailedCount)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDelete)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.LastLoginDate)
@@ -139,17 +78,12 @@
                 @Html.DisplayFor(modelItem => item.ExpireDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Creator)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.HostIp)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">ویرایش</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">مشاهده اطلاعات</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">حذف</a>
             </td>
         </tr>
+        i++;
 }
     </tbody>
 </table>

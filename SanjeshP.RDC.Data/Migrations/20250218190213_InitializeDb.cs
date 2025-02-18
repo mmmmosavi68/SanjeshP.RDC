@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SanjeshP.RDC.Data.Migrations
 {
-    public partial class InitiDB_14031129 : Migration
+    public partial class InitializeDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -59,6 +59,7 @@ namespace SanjeshP.RDC.Data.Migrations
                     Title = table.Column<string>(nullable: true),
                     ParentId = table.Column<Guid>(nullable: true),
                     PageCode = table.Column<int>(nullable: true),
+                    Path = table.Column<string>(nullable: true),
                     ControllerName = table.Column<string>(nullable: true),
                     ActionName = table.Column<string>(nullable: true),
                     ShowMenu = table.Column<bool>(nullable: true),

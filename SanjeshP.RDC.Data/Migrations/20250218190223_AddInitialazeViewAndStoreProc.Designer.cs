@@ -10,8 +10,8 @@ using SanjeshP.RDC.Data;
 namespace SanjeshP.RDC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250218142938_Add_Path_to_Menus")]
-    partial class Add_Path_to_Menus
+    [Migration("20250218190223_AddInitialazeViewAndStoreProc")]
+    partial class AddInitialazeViewAndStoreProc
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

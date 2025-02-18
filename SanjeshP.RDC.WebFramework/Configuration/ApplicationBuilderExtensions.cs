@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Data;
+using Services.RDC.DataInitializer;
 
 namespace SanjeshP.RDC.WebFramework.Configuration
 {
@@ -22,7 +23,7 @@ namespace SanjeshP.RDC.WebFramework.Configuration
             return app;
         }
 
-        public static IApplicationBuilder IntializeDatabase(this IApplicationBuilder app)
+        public static IApplicationBuilder InitializeDatabase(this IApplicationBuilder app)
         {
             Assert.NotNull(app, nameof(app));
 
@@ -35,9 +36,9 @@ namespace SanjeshP.RDC.WebFramework.Configuration
             //Applies any pending migrations for the context to the database like (Update-Database)
             dbContext.Database.Migrate();
 
-            //var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
-            //foreach (var dataInitializer in dataInitializers)
-            //    dataInitializer.InitializeData();
+            var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
+            foreach (var dataInitializer in dataInitializers)
+                dataInitializer.InitializeData();
 
             return app;
         }
