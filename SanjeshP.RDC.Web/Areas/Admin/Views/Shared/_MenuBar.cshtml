@@ -1,0 +1,40 @@
+﻿@model List<MMM.Olympiad.Web.Areas.UserArea.Models.ListMenuDto>
+<ul>
+    <li class="header-menu align-content-center">
+        <span>لیست صفحات</span>
+    </li>
+    @foreach (var mod1 in Model.ToList())
+    {
+        @foreach (var mod12 in mod1.children.ToList())
+        {
+            @foreach (var parent in mod12.children.ToList())
+            {
+                <li class="@parent.CssClass">
+                    <a data-original-title="" title="">
+                        <i class="@parent.Icon" aria-hidden="true" data-original-title="" title=""></i>
+                        <span class="menu-text">@parent.Title</span>
+                    </a>
+                    @if (parent.children.Count > 0)
+                    {
+                        <div class="sidebar-submenu">
+                            <ul>
+                                @foreach (var child in parent.children.ToList())
+                                {
+                                    <li>
+                                        <a asp-controller="@child.ControllerName" asp-action="@child.ActionName" data-original-title="" title="">
+                                            @child.Title
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </li>
+            }
+        }
+    }
+</ul>
+<script src="~/js/dashbord/main.js"></script>
+
+
+

@@ -125,19 +125,10 @@ namespace SanjeshP.RDC.Web.Controllers
                     };
 
                     await _userTokenRepository.AddTokenAsync(token, cancellationToken);
-                    user.UserTokens = await _userTokenRepository.GetByUserIdAsync(user.Id, cancellationToken);
-                    var CurentView_UserMenubar = _view_UserMenubarRepository.GetUserAccessMenu(user.Id, cancellationToken);
-                    string CurentView_UserMenubar_Json = JsonConvert.SerializeObject(CurentView_UserMenubar);
+                    var userTokens = await _userTokenRepository.GetByUserIdAsync(user.Id, cancellationToken);
+                    //var CurentView_UserMenubar = _view_UserMenubarRepository.GetUserAccessMenu(user.Id, cancellationToken);
+                    //string CurentView_UserMenubar_Json = JsonConvert.SerializeObject(CurentView_UserMenubar);
 
-                    //List<View_UserMenubar> result = await _view_UserMenubarRepository.GetUserMenuByUser_Id(user.Id, cancellationToken);
-                    //var claims = new List<Claim>()
-                    //{
-                    //    new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
-                    //    new Claim(ClaimTypes.Name,user.UserProfiles.Select(p=>p.FirstName).First()+" "+user.UserProfiles.Select(p=>p.LastName).First()),
-                    //    new Claim("RoleID",user.UserRoles.Select(p=>p.Role.NormalizedRoleTitleEn).Last()),
-                    //    new Claim("RoleTitle_Fa",user.UserRoles.Select(p=>p.Role.RoleTitleFa).First()),
-                    //    new Claim("View_UserMenubar",son),
-                    //};
 
                     var claims = new List<Claim>()
                         {
