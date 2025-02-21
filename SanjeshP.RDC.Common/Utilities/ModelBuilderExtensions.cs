@@ -65,6 +65,29 @@ namespace SanjeshP.RDC.Common.Utilities
             }
         }
 
+
+        public static void AddGetDateForCreateDateConvention(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.AddDefaultValueSqlConventionGetDate("CreateDate", typeof(DateTime), "GETDATE()");
+        }
+
+        /// <summary>
+        /// Set DefaultValueSql for sepecific property name and type
+        /// </summary>
+        /// <param name="modelBuilder"></param>
+        /// <param name="propertyName">Name of property wants to set DefaultValueSql for</param>
+        /// <param name="propertyType">Type of property wants to set DefaultValueSql for </param>
+        /// <param name="defaultValueSql">DefaultValueSql like "NEWSEQUENTIALID()"</param>
+        public static void AddDefaultValueSqlConventionGetDate(this ModelBuilder modelBuilder, string propertyName, Type propertyType, string defaultValueSql)
+        {
+            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                IMutableProperty property = entityType.GetProperties().SingleOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+                if (property != null && property.ClrType == propertyType)
+                    property.SetDefaultValueSql(defaultValueSql);
+            }
+        }
+
         /// <summary>
         /// Set DeleteBehavior.Restrict by default for relations
         /// </summary>
@@ -116,6 +139,13 @@ namespace SanjeshP.RDC.Common.Utilities
 
             foreach (Type type in types)
                 modelBuilder.Entity(type);
+            //    var types = assembly.GetTypes()
+            //.Where(type => type.GetInterfaces().Contains(typeof(T)));
+
+            //    foreach (var type in types)
+            //    {
+            //        modelBuilder.Entity(type);
+            //    }
         }
     }
 }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Models.UserViewModel
 {
-    public class UserAddViewModel : BaseDto<UserAddViewModel, User, Guid>
+    public class UserAddDTO : BaseDto<UserAddDTO, User, Guid>
     {
         [MaxLength(200)]
         [Display(Name = "نام کاربری")]
@@ -30,7 +30,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.UserViewModel
         public string PhoneNumber { get; set; }
     }
 
-    public class UserViewModel : BaseDto<UserViewModel, User, Guid>
+    public class UserDTO : BaseDto<UserDTO, User, Guid>
     {
         [MaxLength(200)]
         [Display(Name = "نام کاربری")]

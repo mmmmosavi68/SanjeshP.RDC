@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SanjeshP.RDC.Menu
+namespace SanjeshP.RDC.Entities.Menu
 {
     public class View_UserMenubar : BaseEntity<Guid>, IIgnoreDependency
     {

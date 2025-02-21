@@ -139,24 +139,24 @@ GO
 
 
 
-/****** Object:  View [dbo].[View_UserMenubar]    Script Date: 2/18/2025 6:23:07 PM ******/
-SET ANSI_NULLS ON
-GO
+--/****** Object:  View [dbo].[View_UserMenubar]    Script Date: 2/18/2025 6:23:07 PM ******/
+--SET ANSI_NULLS ON
+--GO
 
-SET QUOTED_IDENTIFIER ON
-GO
+--SET QUOTED_IDENTIFIER ON
+--GO
 
-CREATE VIEW [dbo].[View_UserMenubars]
-AS
-SELECT    M.Id, M.Title, M.ParentId, M.PageCode, M.ShowMenu, M.CssClass, M.Icon, M.Link, M.ControllerName, M.ActionName, CONVERT(bit,
-                          (SELECT    CASE WHEN AM.IsDelete = 0 THEN 1 WHEN AM.IsDelete = 1 THEN 0 WHEN AM.IsDelete IS NULL THEN 0 END AS Expr1)) AS Person_Checkecd, CONVERT(bit,
-                          (SELECT    CASE WHEN AMG.IsDelete = 0 THEN 1 WHEN AMG.IsDelete = 1 THEN 0 WHEN AMG.IsDelete IS NULL THEN 0 END AS Expr1)) AS Group_Checkecd, AM.UserId, ISNULL
-                          ((SELECT    COUNT(Id) AS Expr1
-                              FROM         dbo.Menus AS MP
-                              WHERE     (ParentId = M.Id)), 0) AS IsParent
-FROM         dbo.Menus AS M LEFT OUTER JOIN
-                      dbo.AccessMenus AS AM ON AM.ListMenuId = M.Id LEFT OUTER JOIN
-                      dbo.AccessMenusGroups AS AMG ON AMG.ListMenuId = M.Id
-WHERE     (M.IsDelete = 0) AND (M.IsActive = 1)
-GO
+--CREATE VIEW [dbo].[View_UserMenubars]
+--AS
+--SELECT    M.Id, M.Title, M.ParentId, M.PageCode, M.ShowMenu, M.CssClass, M.Icon, M.Link, M.ControllerName, M.ActionName, CONVERT(bit,
+--                          (SELECT    CASE WHEN AM.IsDelete = 0 THEN 1 WHEN AM.IsDelete = 1 THEN 0 WHEN AM.IsDelete IS NULL THEN 0 END AS Expr1)) AS Person_Checkecd, CONVERT(bit,
+--                          (SELECT    CASE WHEN AMG.IsDelete = 0 THEN 1 WHEN AMG.IsDelete = 1 THEN 0 WHEN AMG.IsDelete IS NULL THEN 0 END AS Expr1)) AS Group_Checkecd, AM.UserId, ISNULL
+--                          ((SELECT    COUNT(Id) AS Expr1
+--                              FROM         dbo.Menus AS MP
+--                              WHERE     (ParentId = M.Id)), 0) AS IsParent
+--FROM         dbo.Menus AS M LEFT OUTER JOIN
+--                      dbo.AccessMenus AS AM ON AM.ListMenuId = M.Id LEFT OUTER JOIN
+--                      dbo.AccessMenusGroups AS AMG ON AMG.ListMenuId = M.Id
+--WHERE     (M.IsDelete = 0) AND (M.IsActive = 1)
+--GO
 

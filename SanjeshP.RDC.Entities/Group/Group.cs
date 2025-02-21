@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SanjeshP.RDC.Group
+namespace SanjeshP.RDC.Entities.Group
 {
     public class Group : BaseEntity<Guid>   
     {

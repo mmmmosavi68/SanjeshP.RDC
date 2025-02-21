@@ -1,8 +1,8 @@
 ﻿using SanjeshP.RDC.Entities.Common;
-using SanjeshP.RDC.Group;
+using SanjeshP.RDC.Entities.Group;
 using System;
 
-namespace SanjeshP.RDC.Menu
+namespace SanjeshP.RDC.Entities.Menu
 {
     public class AccessMenusGroup : BaseEntity
     {

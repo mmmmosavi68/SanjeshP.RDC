@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
-using SanjeshP.RDC.Entities.User;
+
 
 namespace SanjeshP.RDC.Data
 {
@@ -24,10 +24,6 @@ namespace SanjeshP.RDC.Data
         //    base.OnConfiguring(optionsBuilder);
         //}
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<UserProfile> UserProfile { get; set; }
-        public DbSet<Role> Roles { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -38,6 +34,7 @@ namespace SanjeshP.RDC.Data
             modelBuilder.RegisterEntityTypeConfiguration(entitiesAssembly);
             modelBuilder.AddRestrictDeleteBehaviorConvention();
             modelBuilder.AddSequentialGuidForIdConvention();
+            modelBuilder.AddGetDateForCreateDateConvention();
             modelBuilder.AddPluralizingTableNameConvention();
         }
 
