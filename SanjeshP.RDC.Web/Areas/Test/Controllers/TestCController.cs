@@ -2,31 +2,31 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
+namespace SanjeshP.RDC.Web.Areas.Test.Controllers
 {
-    [Area("Admin")]
+    [Area("Test")]
     [AllowAnonymous]
-    public class HomeController : Controller
+    public class TestCController : Controller
     {
-        // GET: HomeController
+        // GET: TestCController
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: HomeController/Details/5
+        // GET: TestCController/Details/5
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: HomeController/Create
+        // GET: TestCController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: HomeController/Create
+        // POST: TestCController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
@@ -41,13 +41,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
         }
 
-        // GET: HomeController/Edit/5
+        // GET: TestCController/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: HomeController/Edit/5
+        // POST: TestCController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -62,13 +62,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
         }
 
-        // GET: HomeController/Delete/5
+        // GET: TestCController/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: HomeController/Delete/5
+        // POST: TestCController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)

@@ -145,7 +145,7 @@ namespace SanjeshP.RDC.Web.Controllers
                             new Claim(ClaimTypes.Name, user.UserProfiles.Any() ? user.UserProfiles.First().FirstName + " " + user.UserProfiles.First().LastName : "No Profile"),
                             new Claim("RoleID", user.UserRoles.Any() ? user.UserRoles.Last().Role.NormalizedRoleTitleEn : "No Role"),
                             new Claim("RoleTitle_Fa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleTitleFa : "No Role"),
-                            new Claim("View_UserMenubar", CurentView_UserMenubar_Json),
+                            //new Claim("View_UserMenubar", CurentView_UserMenubar_Json),
                         };
 
                     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

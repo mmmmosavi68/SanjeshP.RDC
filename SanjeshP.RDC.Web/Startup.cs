@@ -35,10 +35,10 @@ namespace SanjeshP.RDC.Web
             services.AddMinimalMvc();
             services.AddElmahCore(Configuration, _siteSetting);
             //services.AddJwtAuthentication(_siteSetting.JwtSettings);
-            services.AddCustomAuthentication();
             services.AddControllers();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
+            services.AddCustomAuthentication();
 
 
             #region Comment
@@ -87,10 +87,19 @@ namespace SanjeshP.RDC.Web
                 endpoints.MapControllerRoute(
                   name: "default",
                   pattern: "{controller=Identity}/{action=Login}/{id?}");
-                endpoints.MapControllerRoute(
-                   name: "Admin",
-                   pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute(
+                    name: "Admin",
+                    areaName: "Admin",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapAreaControllerRoute(
+                    name: "Test",
+                    areaName: "Test",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+              
             });
         }
     }
 }
+
