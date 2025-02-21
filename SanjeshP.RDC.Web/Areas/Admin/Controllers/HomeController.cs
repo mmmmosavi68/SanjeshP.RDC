@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MMM.Olympiad.Web.Areas.UserArea.Models;
 using Newtonsoft.Json;
@@ -14,17 +13,21 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
     [AllowAnonymous]
     public class HomeController : Controller
     {
-        // GET: HomeController
         public ActionResult Index()
         {
             return View();
         }
 
-
         #region Menubar
         public IActionResult MenuBar(CancellationToken cancellationToken)
         {
             var _view_UserMenubar = JsonConvert.DeserializeObject<List<View_UserMenubar>>(User.FindFirst("View_UserMenubar").Value.ToString());
+            if (_view_UserMenubar == null)
+            {
+                // Handle the case where _view_UserMenubar is null
+                return PartialView("_MenuBar", new List<ListMenuDto>());
+            }
+
             List<ListMenuDto> FinalList = new List<ListMenuDto>();
             foreach (var item in _view_UserMenubar)
             {
@@ -50,6 +53,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return PartialView("_MenuBar", FinalList);
         }
+
+
+
         private List<ListMenuDto> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
         {
             List<ListMenuDto> FinalList = new List<ListMenuDto>();
@@ -75,6 +81,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
             return FinalList;
         }
-#endregion
+        #endregion
     }
 }

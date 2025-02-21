@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using SanjeshP.RDC.Entities.User;
 
 
 namespace SanjeshP.RDC.Data
@@ -17,7 +18,7 @@ namespace SanjeshP.RDC.Data
         {
 
         }
-
+        DbSet<User> Users { get; set; }
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MyApiDb;Integrated Security=true");
