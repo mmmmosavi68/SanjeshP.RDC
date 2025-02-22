@@ -85,8 +85,10 @@ namespace SanjeshP.RDC.Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
-                  name: "default",
-                  pattern: "{controller=Identity}/{action=Login}/{id?}");
+                    name: "redirect",
+                    pattern: "",
+                    defaults: new { controller = "Identity", action = "Login" });
+
                 endpoints.MapAreaControllerRoute(
                     name: "Admin",
                     areaName: "Admin",
@@ -97,8 +99,11 @@ namespace SanjeshP.RDC.Web
                     areaName: "Test",
                     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
-              
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Identity}/{action=Login}/{id?}");
             });
+
         }
     }
 }

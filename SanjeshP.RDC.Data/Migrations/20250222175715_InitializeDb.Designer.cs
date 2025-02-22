@@ -10,7 +10,7 @@ using SanjeshP.RDC.Data;
 namespace SanjeshP.RDC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250222111338_InitializeDb")]
+    [Migration("20250222175715_InitializeDb")]
     partial class InitializeDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -231,6 +231,9 @@ namespace SanjeshP.RDC.Data.Migrations
                     b.Property<string>("ActionName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Area")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ControllerName")
                         .HasColumnType("nvarchar(max)");
 
@@ -290,6 +293,9 @@ namespace SanjeshP.RDC.Data.Migrations
                         .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("ActionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Area")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ControllerName")

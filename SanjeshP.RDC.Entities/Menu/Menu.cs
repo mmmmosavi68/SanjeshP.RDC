@@ -17,6 +17,7 @@ namespace SanjeshP.RDC.Entities.Menu
         public Guid? ParentId { get; set; }
         public int? PageCode { get; set; }
         public string Path { get; set; }
+        public string Area { get; set; }
         public string ControllerName { get; set; }
         public string ActionName { get; set; }
         public bool? ShowMenu { get; set; }

@@ -21,6 +21,7 @@ Begin
 	, M.CssClass
 	, M.Icon
 	, M.Link
+	, M.Area
 	, M.ControllerName
 	, M.ActionName
 	-- لیست منو‌هایی که کاربر جاری به صورت فردی و گروهی به آن دسترسی دارد
@@ -67,6 +68,7 @@ Begin
 	, M.CssClass
 	, M.Icon
 	, M.Link
+	, M.Area
 	, M.ControllerName
 	, M.ActionName
 	, CONVERT(bit,0) AS CurentUser_Person_Checkecd
@@ -107,6 +109,7 @@ Begin
 	, M.CssClass
 	, M.Icon
 	, M.Link
+	, M.Area
 	, M.ControllerName
 	, M.ActionName
 	-- لیست منو‌هایی که کاربر جاری به صورت فردی و گروهی به آن دسترسی دارد
@@ -139,9 +142,9 @@ GO
 
 
 
---CREATE VIEW [dbo].[View_UserMenubar]
+--CREATE VIEW [dbo].[View_UserMenubars]
 --AS
---SELECT    M.Id, M.Title, M.ParentId, M.PageCode, M.ShowMenu, M.CssClass, M.Icon, M.Link, M.ControllerName, M.ActionName, CONVERT(bit,
+--SELECT    M.Id, M.Title, M.ParentId, M.PageCode, M.ShowMenu, M.CssClass, M.Icon, M.Link,M.Area, M.ControllerName, M.ActionName, CONVERT(bit,
 --                          (SELECT    CASE WHEN AM.IsDelete = 0 THEN 1 WHEN AM.IsDelete = 1 THEN 0 WHEN AM.IsDelete IS NULL THEN 0 END AS Expr1)) AS Person_Checkecd, CONVERT(bit,
 --                          (SELECT    CASE WHEN AMG.IsDelete = 0 THEN 1 WHEN AMG.IsDelete = 1 THEN 0 WHEN AMG.IsDelete IS NULL THEN 0 END AS Expr1)) AS Group_Checkecd, AM.UserId, ISNULL
 --                          ((SELECT    COUNT(Id) AS Expr1

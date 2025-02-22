@@ -52,6 +52,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
                         ShowMenu = item.ShowMenu,
                         Title = item.Title,
                         IsDelete = item.Person_Checkecd,
+                        Area = item.Area,
                         ActionName = item.ActionName,
                         ControllerName = item.ControllerName,
                         children = GetChildMenu(item.Id, CurentView_UserMenubar)
@@ -81,6 +82,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
                         ParentId = item.ParentId,
                         ShowMenu = item.ShowMenu,
                         Title = item.Title,
+                        Area = item.Area,
                         ActionName = item.ActionName,
                         ControllerName = item.ControllerName,
                         children = GetChildMenu(item.Id, _List)

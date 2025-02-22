@@ -229,6 +229,9 @@ namespace SanjeshP.RDC.Data.Migrations
                     b.Property<string>("ActionName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Area")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ControllerName")
                         .HasColumnType("nvarchar(max)");
 
@@ -288,6 +291,9 @@ namespace SanjeshP.RDC.Data.Migrations
                         .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("ActionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Area")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ControllerName")
