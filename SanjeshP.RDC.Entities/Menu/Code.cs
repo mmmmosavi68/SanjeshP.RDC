@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SanjeshP.RDC.Menu
+namespace SanjeshP.RDC.Entities.Menu
 {
     public class Code : BaseEntity
     {

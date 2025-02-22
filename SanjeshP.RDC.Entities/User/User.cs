@@ -1,5 +1,6 @@
 ﻿using SanjeshP.RDC.Entities.Common;
-using SanjeshP.RDC.Menu;
+using SanjeshP.RDC.Entities.Menu;
+using SanjeshP.RDC.Entities.Group;
 using System;
 using System.Collections.Generic;
 
@@ -50,5 +51,6 @@ namespace SanjeshP.RDC.Entities.User
         public virtual ICollection<AccessMenusGroup> MenusGroupAccesses { get; set; } = new List<AccessMenusGroup>();
 
         public virtual ICollection<AccessMenus> MenusAccesses { get; set; } = new List<AccessMenus>();
+
     }
 }

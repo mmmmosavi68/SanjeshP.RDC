@@ -8,6 +8,7 @@ using System.Threading;
 using System.Linq;
 using SanjeshP.RDC.Entities.User;
 
+
 namespace SanjeshP.RDC.Data
 {
     public class ApplicationDbContext : DbContext
@@ -17,16 +18,12 @@ namespace SanjeshP.RDC.Data
         {
 
         }
-
+        DbSet<User> Users { get; set; }
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MyApiDb;Integrated Security=true");
         //    base.OnConfiguring(optionsBuilder);
         //}
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<UserProfile> UserProfile { get; set; }
-        public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +35,7 @@ namespace SanjeshP.RDC.Data
             modelBuilder.RegisterEntityTypeConfiguration(entitiesAssembly);
             modelBuilder.AddRestrictDeleteBehaviorConvention();
             modelBuilder.AddSequentialGuidForIdConvention();
+            modelBuilder.AddGetDateForCreateDateConvention();
             modelBuilder.AddPluralizingTableNameConvention();
         }
 

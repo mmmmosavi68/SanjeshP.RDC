@@ -2,6 +2,7 @@
 using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Common.Utilities;
+using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.User;
 using System;
@@ -19,14 +20,30 @@ namespace SanjeshP.RDC.Data.Repositories
         {
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetByAllNoTrackingAsync(CancellationToken cancellationToken)
         {
-            return await TableNoTracking.Where(u => u.IsDelete == false).ToListAsync();
+            return await TableNoTracking.Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .ToListAsync(cancellationToken);
         }
-        public Task<User> GetByUserAndPass(string username, string password, CancellationToken cancellationToken)
+        public async Task<IEnumerable<User>> GetByAllAsync(CancellationToken cancellationToken)
         {
-            var passwordHash = SecurityHelper.GetSha256Hash(password);
-            return Table.Where(p => p.UserName == username && p.PasswordHash == passwordHash).SingleOrDefaultAsync(cancellationToken);
+            return await Table.Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<User> GetByUserNameAsync(string userName, CancellationToken cancellationToken)
+        {
+            return await Table.Where(p => p.NormalizedUserName == userName.FixTextUpper())
+                .Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .SingleOrDefaultAsync(cancellationToken);
         }
         public async Task<User> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
@@ -36,22 +53,21 @@ namespace SanjeshP.RDC.Data.Repositories
                 .Where(u => u.IsDelete == false)
                 .Where(p => p.Id == id).SingleOrDefaultAsync(cancellationToken);
         }
-        public async Task AddAsync(User user, string password, CancellationToken cancellationToken)
+        public async Task<User> GetByEmailAsync(string email, CancellationToken cancellationToken)
         {
-            // بهتره تو لایه سرویس بررسی شود
-            var exist = await TableNoTracking.AnyAsync(p => p.UserName == user.UserName);
-            if (exist)
-                throw new BadRequestException("نام کاربری تکراری است");
-
-            var passwordHash = SecurityHelper.GetSha256Hash(password) ?? string.Empty;
-            user.PasswordHash = passwordHash;
-            await base.AddAsync(user, cancellationToken);
+            return await Table.Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .Where(p => p.EmailAddress == email).SingleOrDefaultAsync(cancellationToken);
         }
-
-        public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+        public async Task<User> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
         {
-            user.LastLoginDate = DateTimeOffset.Now;
-            return UpdateAsync(user, cancellationToken);
+            return await Table.Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .Where(p => p.PhoneNumber == phoneNumber).SingleOrDefaultAsync(cancellationToken);
         }
 
         public Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
@@ -60,11 +76,38 @@ namespace SanjeshP.RDC.Data.Repositories
             return UpdateAsync(user, cancellationToken);
         }
 
+        public override void Update(User entity, bool saveNow = true)
+        {
+            entity.SecurityStamp = Guid.NewGuid();
+            base.Update(entity, saveNow);
+        }
 
-        //public override void Update(User entity, bool saveNow = true)
-        //{
-        //    entity.SecurityStamp = Guid.NewGuid();
-        //    base.Update(entity, saveNow);
-        //}
+        public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+        {
+            user.LastLoginDate = DateTimeOffset.Now;
+            return UpdateAsync(user, cancellationToken);
+        }
+
+
+        public Task UpdateAsync(User user, Guid id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteAsync(User User, CancellationToken cancellationToken)
+        {
+            User.IsDelete = true;
+            Update(User, true);
+        }
+
+        public async Task<User> GetByUserNameAndPasswordAsync(string userName, string passwordHash, CancellationToken cancellationToken)
+        {
+            return await Table.Where(p => p.UserName == userName && p.PasswordHash == passwordHash)
+                .Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .SingleOrDefaultAsync(cancellationToken);
+        }
     }
 }

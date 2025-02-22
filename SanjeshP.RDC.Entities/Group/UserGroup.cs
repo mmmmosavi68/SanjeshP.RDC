@@ -1,10 +1,9 @@
 ﻿using SanjeshP.RDC.Entities.Common;
-using SanjeshP.RDC.Entities.User;
-using SanjeshP.RDC.Menu;
+using SanjeshP.RDC.Entities.Menu;
 using System;
 using System.Collections.Generic;
 
-namespace SanjeshP.RDC.Group
+namespace SanjeshP.RDC.Entities.Group
 {
     public class UserGroup : BaseEntity<Guid>
     {
@@ -23,7 +22,7 @@ namespace SanjeshP.RDC.Group
         public Guid Creator { get; set; }
         public string HostIp { get; set; }
         public virtual ICollection<AccessMenusGroup> AccessMenusGroups { get; set; } = new List<AccessMenusGroup>();
-        public virtual User User { get; set; }
+        public virtual User.User User { get; set; }
         public virtual Group Group { get; set; }
     }
 }

@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SanjeshP.RDC.Menu
+namespace SanjeshP.RDC.Entities.Menu
 {
     [NotMapped]
-    public class View_UserMenubar : BaseEntity<Guid>, IIgnoreDependency
+    //[IgnoreMigrationAttribute]
+    public class View_UserMenubar : BaseEntity<Guid> /*IIgnoreDependency*/
     {
         public string Title { get; set; }
         public Guid? ParentId { get; set; }

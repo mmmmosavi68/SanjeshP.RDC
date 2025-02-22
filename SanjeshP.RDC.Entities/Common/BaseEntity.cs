@@ -1,4 +1,7 @@
-﻿namespace SanjeshP.RDC.Entities.Common
+﻿
+
+
+namespace SanjeshP.RDC.Entities.Common
 {
     public interface IEntity
     {

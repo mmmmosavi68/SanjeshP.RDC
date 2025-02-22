@@ -1,9 +1,8 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Entities.Group;
+using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
-using SanjeshP.RDC.Group;
-using SanjeshP.RDC.Menu;
 using Services.RDC.DataInitializer;
 using System;
 using System.Collections.Generic;
@@ -78,70 +77,70 @@ namespace Services.DataInitializer
                 }
             }
 
-            //var jsonMenu = File.ReadAllText(path + "Menu.json");
-            //var jMenu = JsonConvert.DeserializeObject<List<Menu>>(jsonMenu).OrderBy(u => u.PageCode);
-            //foreach (var menu in jMenu)
-            //{
-            //    var existMenu = eFMenuRepository.TableNoTracking.Any(p => p.Id == menu.Id);
-            //    if (!existMenu)
-            //    {
-            //        menu.Creator = user.Id;
-            //        menu.CreateDate = DateTime.Now;
-            //        eFMenuRepository.Add(menu);
-            //    }
-            //}
+            var jsonMenu = File.ReadAllText(path + "Menu.json");
+            var jMenu = JsonConvert.DeserializeObject<List<Menu>>(jsonMenu).OrderBy(u => u.PageCode);
+            foreach (var menu in jMenu)
+            {
+                var existMenu = eFMenuRepository.TableNoTracking.Any(p => p.Id == menu.Id);
+                if (!existMenu)
+                {
+                    menu.Creator = user.Id;
+                    menu.CreateDate = DateTime.Now;
+                    eFMenuRepository.Add(menu);
+                }
+            }
 
-            //var jsonGroup = File.ReadAllText(path + "Group.json");
-            //var jGroup = JsonConvert.DeserializeObject<List<Group>>(jsonGroup);
-            //foreach (var menu in jGroup)
-            //{
-            //    var existMenu = eFGroupRepository.TableNoTracking.Any(p => p.UserGroupText == menu.UserGroupText);
-            //    if (!existMenu)
-            //    {
-            //        menu.Creator = user.Id;
-            //        menu.CreateDate = DateTime.Now;
-            //        eFGroupRepository.Add(menu);
-            //    }
-            //}
+            var jsonGroup = File.ReadAllText(path + "Group.json");
+            var jGroup = JsonConvert.DeserializeObject<List<Group>>(jsonGroup);
+            foreach (var menu in jGroup)
+            {
+                var existMenu = eFGroupRepository.TableNoTracking.Any(p => p.UserGroupText == menu.UserGroupText);
+                if (!existMenu)
+                {
+                    menu.Creator = user.Id;
+                    menu.CreateDate = DateTime.Now;
+                    eFGroupRepository.Add(menu);
+                }
+            }
 
-            //var jsonUserGroup = File.ReadAllText(path + "UserGroup.json");
-            //var jUserGroup = JsonConvert.DeserializeObject<List<UserGroup>>(jsonUserGroup);
-            //foreach (var menu in jUserGroup)
-            //{
-            //    var existMenu = eFUserGroupRepository.TableNoTracking.Any(p => p.Id == menu.Id);
-            //    if (!existMenu)
-            //    {
-            //        menu.Creator = user.Id;
-            //        menu.CreateDate = DateTime.Now;
-            //        eFUserGroupRepository.Add(menu);
-            //    }
-            //}
+            var jsonUserGroup = File.ReadAllText(path + "UserGroup.json");
+            var jUserGroup = JsonConvert.DeserializeObject<List<UserGroup>>(jsonUserGroup);
+            foreach (var menu in jUserGroup)
+            {
+                var existMenu = eFUserGroupRepository.TableNoTracking.Any(p => p.Id == menu.Id);
+                if (!existMenu)
+                {
+                    menu.Creator = user.Id;
+                    menu.CreateDate = DateTime.Now;
+                    eFUserGroupRepository.Add(menu);
+                }
+            }
 
-            //var jsonAccessMenusGroup = File.ReadAllText(path + "AccessMenusGroup.json");
-            //var jAccessMenusGroup = JsonConvert.DeserializeObject<List<AccessMenusGroup>>(jsonAccessMenusGroup);
-            //foreach (var menu in jAccessMenusGroup)
-            //{
-            //    var existMenu = eFAccessMenusGroupRepository.TableNoTracking.Any(p => p.GroupId == menu.GroupId && p.ListMenuId == menu.ListMenuId);
-            //    if (!existMenu)
-            //    {
-            //        menu.Creator = user.Id;
-            //        menu.CreateDate = DateTime.Now;
-            //        eFAccessMenusGroupRepository.Add(menu);
-            //    }
-            //}
+            var jsonAccessMenusGroup = File.ReadAllText(path + "AccessMenusGroup.json");
+            var jAccessMenusGroup = JsonConvert.DeserializeObject<List<AccessMenusGroup>>(jsonAccessMenusGroup);
+            foreach (var menu in jAccessMenusGroup)
+            {
+                var existMenu = eFAccessMenusGroupRepository.TableNoTracking.Any(p => p.GroupId == menu.GroupId && p.ListMenuId == menu.ListMenuId);
+                if (!existMenu)
+                {
+                    menu.Creator = user.Id;
+                    menu.CreateDate = DateTime.Now;
+                    eFAccessMenusGroupRepository.Add(menu);
+                }
+            }
 
-            //var jsonAccessMenu = File.ReadAllText(path + "AccessMenus.json");
-            //var jAccessMenu = JsonConvert.DeserializeObject<List<AccessMenus>>(jsonAccessMenu);
-            //foreach (var menu in jAccessMenu)
-            //{
-            //    var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.ListMenuId == menu.ListMenuId);
-            //    if (!existMenu)
-            //    {
-            //        menu.Creator = user.Id;
-            //        menu.CreateDate = DateTime.Now;
-            //        eFAccessMenusRepository.Add(menu);
-            //    }
-            //}
+            var jsonAccessMenu = File.ReadAllText(path + "AccessMenus.json");
+            var jAccessMenu = JsonConvert.DeserializeObject<List<AccessMenus>>(jsonAccessMenu);
+            foreach (var menu in jAccessMenu)
+            {
+                var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.ListMenuId == menu.ListMenuId);
+                if (!existMenu)
+                {
+                    menu.Creator = user.Id;
+                    menu.CreateDate = DateTime.Now;
+                    eFAccessMenusRepository.Add(menu);
+                }
+            }
 
             var jsonRole = File.ReadAllText(path + "Role.json");
             var jRole = JsonConvert.DeserializeObject<List<Role>>(jsonRole);

@@ -1,8 +1,8 @@
 ﻿using SanjeshP.RDC.Entities.Common;
-using SanjeshP.RDC.Entities.User;
 using System;
+using SanjeshP.RDC.Entities.User;
 
-namespace SanjeshP.RDC.Menu
+namespace SanjeshP.RDC.Entities.Menu
 {
     public class AccessMenus : BaseEntity
     {
@@ -21,6 +21,6 @@ namespace SanjeshP.RDC.Menu
         public Guid Creator { get; set; }
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
-        public virtual User User { get; set; }
+        public virtual User.User User { get; set; }
     }
 }

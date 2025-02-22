@@ -110,8 +110,7 @@ namespace WebFramework.Configuration
                 //options.CheckPermissionAction = httpContext => httpContext.User.Identity.IsAuthenticated;
             });
         }
-
-        public static void AddCoustomeAuthentication(this IServiceCollection services)
+        public static void AddCustomAuthentication(this IServiceCollection services)
         {
             services.AddAuthentication(options =>
             {
@@ -120,8 +119,8 @@ namespace WebFramework.Configuration
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie(options =>
             {
-                options.LoginPath = "/Login/Login";
-                options.LogoutPath = "/Login/Login";
+                options.LoginPath = "/Identity/Login";
+                options.LogoutPath = "/Identity/Login";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 //options.Events = new CookieAuthenticationEvents { };
             });
