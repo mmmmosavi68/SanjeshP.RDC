@@ -32,10 +32,7 @@ public partial class AddInitialazeViewAndStoreProc : Migration
         migrationBuilder.Sql(command);
     }
 }
-
-5- Update-Database
-
-6 - Copy this Item to Data.csproj
+5 - Copy this Item to Data.csproj
 
 <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -64,3 +61,6 @@ public partial class AddInitialazeViewAndStoreProc : Migration
   </ItemGroup>
 
 </Project>
+6- Update-Database
+
+
