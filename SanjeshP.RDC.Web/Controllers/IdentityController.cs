@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SanjeshP.RDC.Entities.User;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -17,11 +16,8 @@ using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Common.Exceptions;
-using SanjeshP.RDC.Data.Repositories;
-using SanjeshP.RDC.Models.DTO_Menu;
-using SanjeshP.RDC.Common.Utilities;
-using SanjeshP.RDC.Common;
 using Microsoft.Extensions.Logging;
+using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 
 namespace SanjeshP.RDC.Web.Controllers
 {

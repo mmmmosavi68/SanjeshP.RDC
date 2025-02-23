@@ -1,16 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using SanjeshP.RDC.Entities.User;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using SanjeshP.RDC.WebFramework.Api;
-using SanjeshP.RDC.Entities.Menu;
-using SanjeshP.RDC.Models.DTO_Menu;
+using SanjeshP.RDC.Entities.User;
 
-namespace SanjeshP.RDC.Models.DTO_User
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 {
-    public class UserDto : BaseDto<UserDto, User, Guid>, IValidatableObject
+    public class UserDto : BaseDto<UserDto, SanjeshP.RDC.Entities.User.User, Guid>, IValidatableObject
     {
         //public Guid Id { get; set; }
         /// <summary>

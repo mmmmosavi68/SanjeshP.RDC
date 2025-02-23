@@ -1,9 +1,10 @@
 ﻿using SanjeshP.RDC.Entities.User;
+using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
 using SanjeshP.RDC.WebFramework.Api;
 using System.Collections.Generic;
 
 
-namespace SanjeshP.Entities.User
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.User
 {
     public class RoleDto : BaseDto<RoleDto, Role, int>
     {

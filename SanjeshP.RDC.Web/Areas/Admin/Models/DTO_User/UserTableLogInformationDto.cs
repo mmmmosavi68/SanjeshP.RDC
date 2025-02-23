@@ -1,7 +1,7 @@
 ﻿using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.WebFramework.Api;
 
-namespace SanjeshP.Entities.User
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 {
     public class UserTableLogInformationDto : BaseDto<UserTableLogInformationDto,UserTableLogInformation,int>
     {

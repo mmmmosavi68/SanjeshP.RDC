@@ -3,7 +3,7 @@ using SanjeshP.RDC.WebFramework.Api;
 using System;
 using SanjeshP.RDC.Entities.User;
 
-namespace SanjeshP.Entities.User
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 {
     public class UserVerificationCodeDto : BaseDto<UserVerificationCodeDto, UserVerificationCode, int>
     {

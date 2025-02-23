@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 using SanjeshP.RDC.WebFramework.Api;
 
-namespace SanjeshP.RDC.Models.DTO_Menu
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
     public class CodeDto : BaseDto<CodeDto,Code,int>
     {

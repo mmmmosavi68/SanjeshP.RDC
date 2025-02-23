@@ -4,7 +4,7 @@ using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 
-namespace SanjeshP.RDC.Models.DTO_Menu
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
     public class AccessMenusGroupDto : BaseDto<AccessMenusGroupDto, AccessMenusGroup, int>
     {

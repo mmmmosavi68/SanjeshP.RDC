@@ -22,7 +22,7 @@ namespace SanjeshP.RDC.Entities.Group
         public Guid Creator { get; set; }
         public string HostIp { get; set; }
         public virtual ICollection<AccessMenusGroup> AccessMenusGroups { get; set; } = new List<AccessMenusGroup>();
-        public virtual User.User User { get; set; }
+        public virtual User User { get; set; }
         public virtual Group Group { get; set; }
     }
 }

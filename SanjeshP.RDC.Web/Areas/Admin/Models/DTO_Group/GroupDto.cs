@@ -3,7 +3,7 @@ using System;
 using SanjeshP.RDC.WebFramework.Api;
 using SanjeshP.RDC.Entities.Group;
 
-namespace SanjeshP.RDC.Models.DTO_Group
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
 {
     public class GroupDto : BaseDto<GroupDto, Group, Guid>
     {

@@ -5,7 +5,7 @@ using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Linq;
 
-namespace SanjeshP.RDC.Models.DTO_Menu
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
     public class AccessMenuDto : BaseDto<AccessMenuDto, AccessMenus>
     {

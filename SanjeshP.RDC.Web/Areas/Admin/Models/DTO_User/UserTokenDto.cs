@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using SanjeshP.RDC.Entities.User;
 
-namespace SanjeshP.Entities.User
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 {
     public class UserTokenDto : BaseDto<UserTokenDto, UserToken, Guid>
     {

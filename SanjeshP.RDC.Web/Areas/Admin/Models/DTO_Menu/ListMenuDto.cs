@@ -4,13 +4,13 @@ using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 
-namespace MMM.Olympiad.Web.Areas.UserArea.Models
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
     public class ListMenuDto : BaseDto<ListMenuDto, Menu, Guid>
     {
         public ListMenuDto()
         {
-            InverseParent = new HashSet<ListMenu>();
+            InverseParent = new HashSet<Menu>();
             UserAccessMenus = new HashSet<AccessMenus>();
             UserAccessMenusGroups = new HashSet<AccessMenusGroup>();
         }
@@ -27,8 +27,8 @@ namespace MMM.Olympiad.Web.Areas.UserArea.Models
         public bool? IsActive { get; set; }
         public bool? IsDelete { get; set; }
         public List<ListMenuDto> children { get; set; }
-        public virtual ListMenu Parent { get; set; }
-        public virtual ICollection<ListMenu> InverseParent { get; set; }
+        public virtual Menu Parent { get; set; }
+        public virtual ICollection<Menu> InverseParent { get; set; }
         public virtual ICollection<AccessMenus> UserAccessMenus { get; set; }
         public virtual ICollection<AccessMenusGroup> UserAccessMenusGroups { get; set; }
     }

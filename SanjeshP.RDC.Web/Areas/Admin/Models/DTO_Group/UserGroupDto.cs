@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using SanjeshP.RDC.Entities.Group;
-using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SanjeshP.RDC.Models.DTO_Group
+namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
 {
     public class UserGroupDto : BaseDto<UserGroupDto, UserGroup, Guid>
     {
