@@ -11,7 +11,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
         public Guid? UserId { get; set; }
         public int? RoleId { get; set; }
         public virtual RoleDto Role { get; set; }
-        public virtual User User { get; set; }
+        public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
     }
     public class UserRoleSelectDto : BaseDto<UserRoleSelectDto, UserRole, int>
     {

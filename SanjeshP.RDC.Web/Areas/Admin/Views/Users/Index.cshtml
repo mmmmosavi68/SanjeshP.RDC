@@ -2,7 +2,7 @@
 @model IEnumerable<RegisterDto>
 @{
     ViewData["Title"] = "مدیریت کاربران";
-    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     int i = 1;
 }
 <h3>لیست کاربران</h3>
@@ -10,7 +10,7 @@
     <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر" />
 </div>
 <div class="table-responsive">
-    <table class="table table-hover">
+    <table class="table table-hover text-center">
         <thead>
             <tr class='trhead'>
                 <th>#</th>
@@ -33,10 +33,16 @@
                     @Html.DisplayNameFor(model => model.NationalCode)
                 </th>
                 <th>
+                    @Html.DisplayNameFor(model => model.PhoneNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmailAddress)
+                </th>
+                <th>
                     @Html.DisplayNameFor(model => model.UserTypeTitle)
                 </th>
 
-                <th>
+                <th class="text-center">
                     @Html.DisplayNameFor(model => model.IsActive)
                 </th>
                 <th>عملیات</th>
@@ -67,15 +73,21 @@
                         @Html.DisplayFor(modelItem => item.NationalCode)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.UserTypeTitle)
+                        @Html.DisplayFor(modelItem => item.PhoneNumber)
                     </td>
                     <td>
+                        @Html.DisplayFor(modelItem => item.EmailAddress)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserTypeTitle)
+                    </td>
+                    <td class="text-center">
                         @Html.DisplayFor(modelItem => item.IsActiveTitle)
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="glyphicon glyphicon-info-sign"></i></a>
-                        <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.UserId')" title="ویرایش کاربر"><i class="glyphicon glyphicon-edit"></i></a>
-                        <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر"><i class="glyphicon glyphicon-remove"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.UserId')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر"><i class="fa fa-trash"></i></a>
                         <a class="btn btn-sm btn-outline-dark" onclick="AccessMenu('@item.UserId')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
                     </td>
                 </tr>
@@ -112,7 +124,7 @@
     </div>
 </div>
 @section scripts {
-    <link href="~/js/dashbord/datatable/jquery.datatables.min.css" rel="stylesheet" />
+@*     <link href="~/js/dashbord/datatable/jquery.datatables.min.css" rel="stylesheet" />
     <script src="~/js/bootstrap-confirmation.min.js"></script>
     <script src="~/js/dashbord/datatable/jquery.datatables.min.js"></script>
     <script type="text/javascript">
@@ -164,5 +176,5 @@
             $("#body_Modal_AddEdit").load("/UserProfile/UserAccessMenu?userid=" + UserID);
 
         };
-    </script>
+    </script> *@
 }

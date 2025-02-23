@@ -44,16 +44,16 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
             if (Password.Equals("123456"))
                 yield return new ValidationResult("کلمه عبور نمی تواند 123456 باشد", new[] { nameof(Password) });
         }
-        public class UserConfiguration : IEntityTypeConfiguration<User>
+        public class UserConfiguration : IEntityTypeConfiguration<SanjeshP.RDC.Entities.User.User>
         {
-            public void Configure(EntityTypeBuilder<User> builder)
+            public void Configure(EntityTypeBuilder<SanjeshP.RDC.Entities.User.User> builder)
             {
                 builder.Property(p => p.UserName).IsRequired().HasMaxLength(100);
             }
         }
     }
 
-    public class UserSelectDto : BaseDto<UserSelectDto, User, Guid>
+    public class UserSelectDto : BaseDto<UserSelectDto, SanjeshP.RDC.Entities.User.User, Guid>
     {
         //public Guid Id { get; set; }
         /// <summary>
@@ -81,7 +81,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
         public string PhoneNumber { get; set; }
 
         public bool IsActive { get; set; }
-        public bool IsDelete{ get; set; }
+        public bool IsDelete { get; set; }
         public DateTimeOffset LastLoginDate { get; set; }
         public DateTime CreateDate { get; set; }
 
@@ -101,6 +101,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
     public class UserSelectByTotalRowCounttDto
     {
         public int TotalRowCounttDto { get; set; }
-        public ICollection< UserSelectDto>  SelectDto { get; set; }
+        public ICollection<UserSelectDto> SelectDto { get; set; }
     }
 }

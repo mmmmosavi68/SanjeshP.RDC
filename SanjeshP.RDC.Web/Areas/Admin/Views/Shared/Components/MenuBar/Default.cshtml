@@ -1,5 +1,5 @@
-﻿@    using MMM.Olympiad.Web.Areas.UserArea.Models
-@    using System.Diagnostics
+﻿@using System.Diagnostics
+@using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 @model List<ListMenuDto>
 
 @{
@@ -41,7 +41,7 @@
                     }
                     @if (parent.children.Count > 0)
                     {
-                        <ul class="nav nav-treeview">
+                        <ul class="nav nav-treeview pr-4">
 
                             @foreach (var child in parent.children.ToList())
                             {

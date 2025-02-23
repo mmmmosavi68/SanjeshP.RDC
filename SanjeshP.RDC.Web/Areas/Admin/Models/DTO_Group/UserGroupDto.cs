@@ -16,7 +16,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public bool? IsDelete { get; set; }
         public DateTime CreateDate { get; set; }
         public virtual ICollection<AccessMenusGroup> MenusGroupAccesses { get; set; } = new List<AccessMenusGroup>();
-        public virtual User User { get; set; }
+        public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public virtual Group Group { get; set; }
     }
 
@@ -32,7 +32,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public bool? IsDelete { get; set; }
         public DateTime CreateDate { get; set; }
         public virtual ICollection<AccessMenusGroup> MenusGroupAccesses { get; set; } = new List<AccessMenusGroup>();
-        public virtual User User { get; set; }
+        public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public virtual Group Group { get; set; }
 
         public override void CustomMappings(IMappingExpression<UserGroup, UserGroupSelectDto> mappingExpression)

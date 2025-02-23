@@ -16,7 +16,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
-        public virtual User User { get; set; }
+        public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
     }
 
     public class AccessMenuSelectDto : BaseDto<AccessMenuSelectDto, AccessMenus>
@@ -31,7 +31,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
-        public virtual User User { get; set; }
+        public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public override void CustomMappings(IMappingExpression<AccessMenus, AccessMenuSelectDto> mappingExpression)
         {
             mappingExpression.ForMember(
