@@ -1,8 +1,9 @@
-﻿@model SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User.RegisterDto
+﻿@model SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User.RegisterEditDto
 
 <div class="row">
     <div class="col-md-12">
         <form asp-action="EditUser">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label col-sm-4"></label>
@@ -23,6 +24,11 @@
                 <label asp-for="UserName" class="control-label col-sm-4"></label>
                 <input asp-for="UserName" class="form-control col-sm-7 d-inline-block" />
                 <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label col-sm-4"></label>
+                <input asp-for="Password" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EmailAddress" class="control-label col-sm-4"></label>
@@ -48,7 +54,6 @@
             </div>
 
             @Html.HiddenFor(model => model.UserId)
-
             <div class="form-group">
                 <input type="submit" value="ویرایش" class="btn btn-warning" />
             </div>

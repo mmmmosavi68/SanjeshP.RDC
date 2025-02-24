@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
+using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
@@ -104,7 +106,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         {
             return PartialView("AddUser");
         }
-        public async Task<IActionResult> AddUser(RegisterDto registerDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddUser(RegisterEditDto registerEditDto, CancellationToken cancellationToken)
         {
             return PartialView("AddUser");
         }
@@ -123,8 +125,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var registerDto = new RegisterDto
+            var registerEditDto = new RegisterEditDto
             {
+                
                 UserId = user.Id,
                 FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
                 LastName = user.UserProfiles.Select(p => p.LastName).First(),
@@ -133,24 +136,41 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
                 PhoneNumber = user.PhoneNumber,
-                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
-                IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
-                IsDelete = user.IsDelete
             };
 
-            return PartialView("EditUser", registerDto);
+            return PartialView("EditUser", registerEditDto);
         }
         [HttpPost]
-        public IActionResult EditUser(RegisterDto registerDto, Guid userid, CancellationToken cancellationToken)
+        public IActionResult EditUser(RegisterEditDto registerEditDto, Guid userid, CancellationToken cancellationToken)
         {
             if (ModelState.IsValid)
             {
-                //var user = new User()
-                //{
-                //    UserName=
-                //}
+                var user = _userRepository.GetById(userid);
+                var userProfile = _userProfilesRepository.GetById(userid);
+
+                if(user.NormalizedUserName != registerEditDto.UserName.FixTextUpper())
+                {
+                    var userExist = _userRepository.GetByUserNameAsync(user.NormalizedUserName,cancellationToken);
+                    if(userExist != null)
+                    {
+                        ModelState.AddModelError("UserName", "ایمیل تکراری است");
+                        return PartialView("EditUser", registerEditDto);
+                    }
+                }
+                else if (user.NormalizedEmailAddress != registerEditDto.EmailAddress.FixTextUpper())
+                {
+
+                }
+                else if(user.PhoneNumber != registerEditDto.PhoneNumber.FixTextUpper())
+                {
+                    
+                }
+                else
+                {
+
+                }
             }
             return PartialView("EditUser");
         }
