@@ -23,6 +23,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using SanjeshP.RDC.Entities.User;
+using Microsoft.AspNetCore.Http;
 
 namespace WebFramework.Configuration
 {
@@ -122,6 +123,7 @@ namespace WebFramework.Configuration
                 options.LoginPath = "/Identity/Login";
                 options.LogoutPath = "/Identity/Login";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 //options.Events = new CookieAuthenticationEvents { };
             });
         }

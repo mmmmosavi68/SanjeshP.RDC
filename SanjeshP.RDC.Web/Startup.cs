@@ -37,7 +37,6 @@ namespace SanjeshP.RDC.Web
             //services.AddJwtAuthentication(_siteSetting.JwtSettings);
             services.AddControllers();
             services.AddRazorPages().AddRazorRuntimeCompilation();
-            services.AddControllersWithViews();
             services.AddCustomAuthentication();
 
 

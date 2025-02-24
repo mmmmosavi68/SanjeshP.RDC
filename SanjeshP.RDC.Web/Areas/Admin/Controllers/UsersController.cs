@@ -5,6 +5,8 @@ using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
+using SanjeshP.RDC.WebFramework.UserAuthorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -64,6 +66,93 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }).ToList();
 
             return View(newList);
+        }
+
+        public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)
+        {
+            if (userid == null)
+            {
+                return NotFound();
+            }
+            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var registerDto = new RegisterDto
+            {
+                UserId = user.Id,
+                FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
+                LastName = user.UserProfiles.Select(p => p.LastName).First(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).First(),
+                UserName = user.UserName,
+                Password = string.Empty,
+                EmailAddress = user.EmailAddress,
+                PhoneNumber = user.PhoneNumber,
+                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
+                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
+                IsActive = user.IsActive,
+                IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
+                IsDelete = user.IsDelete
+
+            };
+            return PartialView("DetailUser", registerDto);
+        }
+
+
+        public IActionResult AddUser(CancellationToken cancellationToken)
+        {
+            return PartialView("AddUser");
+        }
+        public async Task<IActionResult> AddUser(RegisterDto registerDto, CancellationToken cancellationToken)
+        {
+            return PartialView("AddUser");
+        }
+        [HttpGet]
+        public async Task<IActionResult> EditUser(Guid userid, CancellationToken cancellationToken)
+        {
+            var roles = _eFRepositoryRole.TableNoTracking;
+            ViewBag.ListofRoles = roles;
+
+            if (userid == null)
+            {
+                return NotFound();
+            }
+            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var registerDto = new RegisterDto
+            {
+                UserId = user.Id,
+                FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
+                LastName = user.UserProfiles.Select(p => p.LastName).First(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).First(),
+                UserName = user.UserName,
+                Password = string.Empty,
+                EmailAddress = user.EmailAddress,
+                PhoneNumber = user.PhoneNumber,
+                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
+                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
+                IsActive = user.IsActive,
+                IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
+                IsDelete = user.IsDelete
+            };
+
+            return PartialView("EditUser", registerDto);
+        }
+        [HttpPost]
+        public IActionResult EditUser(RegisterDto registerDto, Guid userid, CancellationToken cancellationToken)
+        {
+            if (ModelState.IsValid)
+            {
+                //var user = new User()
+                //{
+                //    UserName=
+                //}
+            }
+            return PartialView("EditUser");
         }
     }
 }

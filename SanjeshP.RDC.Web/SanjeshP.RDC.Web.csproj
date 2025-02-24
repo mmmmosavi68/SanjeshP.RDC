@@ -12,6 +12,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\Admin\plugins\datatable\jquery-3.5.1.js" />
+    <None Include="wwwroot\Admin\plugins\datatable\jquery.dataTables.min.js" />
+    <None Include="wwwroot\font\glyphicons-halflings-regular.svg" />
+    <None Include="wwwroot\font\glyphicons-halflings-regular.woff2" />
+    <None Include="wwwroot\font\IRANSansWeb.woff2" />
+    <None Include="wwwroot\font\IRANSansXFaNum-Regular.woff2" />
+    <None Include="wwwroot\font\webfonts\fa-brands-400.svg" />
+    <None Include="wwwroot\font\webfonts\fa-brands-400.woff2" />
+    <None Include="wwwroot\font\webfonts\fa-regular-400.svg" />
+    <None Include="wwwroot\font\webfonts\fa-regular-400.woff2" />
+    <None Include="wwwroot\font\webfonts\fa-solid-900.svg" />
+    <None Include="wwwroot\font\webfonts\fa-solid-900.woff2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
