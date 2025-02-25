@@ -26,54 +26,98 @@ namespace SanjeshP.RDC.Data.Repositories
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .ToListAsync(cancellationToken);
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
+
         public async Task<IEnumerable<User>> GetByAllAsync(CancellationToken cancellationToken)
         {
             return await Table.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .ToListAsync(cancellationToken);
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
-        public async Task<User> GetByUserNameAsync(string userName, CancellationToken cancellationToken)
+
+        public async Task<User> GetByUserNameAsync(string userNameUpper, CancellationToken cancellationToken)
         {
-            return await Table.Where(p => p.NormalizedUserName == userName.FixTextUpper())
+            return await Table.Where(p => p.NormalizedUserName == userNameUpper.FixTextUpper())
                 .Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .SingleOrDefaultAsync(cancellationToken);
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
+
+        public User GetByUserName(string userNameUpper)
+        {
+            return Table.Where(p => p.NormalizedUserName == userNameUpper.FixTextUpper())
+                .Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .SingleOrDefault();
+        }
+
         public async Task<User> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await Table.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .Where(p => p.Id == id).SingleOrDefaultAsync(cancellationToken);
+                .Where(p => p.Id == id)
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
-        public async Task<User> GetByEmailAsync(string email, CancellationToken cancellationToken)
+
+        public async Task<User> GetByEmailAsync(string emailUpper, CancellationToken cancellationToken)
         {
-            return await Table.Include(ur => ur.UserRoles)
+            return await Table.AsNoTracking()
+                .Where(u => u.IsDelete == false && u.NormalizedEmailAddress == emailUpper)
+                .Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        public User GetByEmail(string emailUpper)
+        {
+            return TableNoTracking.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .Where(p => p.EmailAddress == email).SingleOrDefaultAsync(cancellationToken);
+                .Where(p => p.NormalizedEmailAddress == emailUpper)
+                .SingleOrDefault();
         }
+
         public async Task<User> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
         {
             return await Table.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .Where(p => p.PhoneNumber == phoneNumber).SingleOrDefaultAsync(cancellationToken);
+                .Where(p => p.PhoneNumber == phoneNumber)
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
+        public User GetByPhoneNumber(string phoneNumber)
+        {
+            return Table.Include(ur => ur.UserRoles)
+                .ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Where(u => u.IsDelete == false)
+                .Where(p => p.PhoneNumber == phoneNumber)
+                .SingleOrDefault();
+        }
+
+        public async Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
         {
             user.SecurityStamp = Guid.NewGuid();
-            return UpdateAsync(user, cancellationToken);
+            await UpdateAsync(user, cancellationToken).ConfigureAwait(false);
         }
 
         public override void Update(User entity, bool saveNow = true)
@@ -82,22 +126,21 @@ namespace SanjeshP.RDC.Data.Repositories
             base.Update(entity, saveNow);
         }
 
-        public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+        public async Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
         {
             user.LastLoginDate = DateTimeOffset.Now;
-            return UpdateAsync(user, cancellationToken);
+            await UpdateAsync(user, cancellationToken).ConfigureAwait(false);
         }
 
-
-        public Task UpdateAsync(User user, Guid id, CancellationToken cancellationToken)
+        public async Task UpdateAsync(User user, Guid id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync(User User, CancellationToken cancellationToken)
+        public async Task DeleteAsync(User user, CancellationToken cancellationToken)
         {
-            User.IsDelete = true;
-            Update(User, true);
+            user.IsDelete = true;
+            await UpdateAsync(user, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<User> GetByUserNameAndPasswordAsync(string userName, string passwordHash, CancellationToken cancellationToken)
@@ -107,7 +150,8 @@ namespace SanjeshP.RDC.Data.Repositories
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
                 .Where(u => u.IsDelete == false)
-                .SingleOrDefaultAsync(cancellationToken);
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

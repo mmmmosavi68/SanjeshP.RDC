@@ -1,19 +1,20 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
-using SanjeshP.RDC.WebFramework.UserAuthorization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 {
@@ -21,6 +22,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
     public class UsersController : Controller
     {
         private readonly IMapper _mapper;
+        private readonly ICompositeViewEngine _viewEngine;
         private readonly ILogger<UsersController> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IUserProfilesRepository _userProfilesRepository;
@@ -29,6 +31,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
+                                , ICompositeViewEngine viewEngine
                                 , ILogger<UsersController> logger
                                 , IUserRepository userRepository
                                 , IUserProfilesRepository userProfilesRepository
@@ -37,6 +40,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IView_UserMenubarRepository view_UserMenubarRepository)
         {
             _mapper = mapper;
+            _viewEngine = viewEngine;
             _logger = logger;
             _userRepository = userRepository;
             _userProfilesRepository = userProfilesRepository;
@@ -52,9 +56,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             List<RegisterDto> newList = users.Select(user => new RegisterDto
             {
                 UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
-                LastName = user.UserProfiles.Select(p => p.LastName).First(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).First(),
+                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
+                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
                 UserName = user.UserName,
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
@@ -72,7 +76,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)
         {
-            if (userid == null)
+            if (userid == Guid.Empty)
             {
                 return NotFound();
             }
@@ -84,9 +88,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             var registerDto = new RegisterDto
             {
                 UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
-                LastName = user.UserProfiles.Select(p => p.LastName).First(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).First(),
+                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
+                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
                 UserName = user.UserName,
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
@@ -102,15 +106,22 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
 
 
-        public IActionResult AddUser(CancellationToken cancellationToken)
+        public IActionResult AddUser()
         {
             return PartialView("AddUser");
         }
-        public async Task<IActionResult> AddUser(RegisterEditDto registerEditDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
-            return PartialView("AddUser");
+            if (ModelState.IsValid)
+            {
+                var user = _mapper.Map<User>(registertDto);
+                await _userRepository.AddAsync(user, cancellationToken);
+                return RedirectToAction(nameof(Index));
+            }
+            return PartialView("AddUser", registertDto);
         }
-        [HttpGet]
+
+
         public async Task<IActionResult> EditUser(Guid userid, CancellationToken cancellationToken)
         {
             var roles = _eFRepositoryRole.TableNoTracking;
@@ -125,13 +136,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var registerEditDto = new RegisterEditDto
+            var registerDto = new RegisterDto
             {
-                
+
                 UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).First(),
-                LastName = user.UserProfiles.Select(p => p.LastName).First(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).First(),
+                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
+                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
                 UserName = user.UserName,
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
@@ -140,39 +151,84 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 IsActive = user.IsActive,
             };
 
-            return PartialView("EditUser", registerEditDto);
+            return PartialView("EditUser", registerDto);
         }
         [HttpPost]
-        public IActionResult EditUser(RegisterEditDto registerEditDto, Guid userid, CancellationToken cancellationToken)
+        public async Task<IActionResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(registertDto.Password))
+            {
+                ModelState.Remove(nameof(registertDto.Password));
+            }
             if (ModelState.IsValid)
             {
-                var user = _userRepository.GetById(userid);
-                var userProfile = _userProfilesRepository.GetById(userid);
+                var user = _userRepository.GetById(registertDto.UserId);
+                var userProfile = _userProfilesRepository.GetByUserIdAsync(registertDto.UserId, cancellationToken);
 
-                if(user.NormalizedUserName != registerEditDto.UserName.FixTextUpper())
+                if (user.NormalizedUserName != registertDto.UserName.FixTextUpper())
                 {
-                    var userExist = _userRepository.GetByUserNameAsync(user.NormalizedUserName,cancellationToken);
-                    if(userExist != null)
+                    var userExist = await _userRepository.GetByUserNameAsync(registertDto.UserName.FixTextUpper(), cancellationToken);
+                    if (userExist != null)
                     {
-                        ModelState.AddModelError("UserName", "ایمیل تکراری است");
-                        return PartialView("EditUser", registerEditDto);
+                        ModelState.AddModelError("UserName", "نام کاربری تکراری است");
+                        var role = _eFRepositoryRole.TableNoTracking;
+                        ViewBag.ListofRoles = role;
+                        return PartialView("EditUser", registertDto);
                     }
                 }
-                else if (user.NormalizedEmailAddress != registerEditDto.EmailAddress.FixTextUpper())
+                else if (user.NormalizedEmailAddress != registertDto.EmailAddress.FixTextUpper())
                 {
+                    var userExist = await _userRepository.GetByEmailAsync(registertDto.EmailAddress.FixTextUpper(), cancellationToken);
+                    if (userExist != null)
+                    {
+                        ModelState.AddModelError("EmailAddress", "ایمیل تکراری است");
+                        var role = _eFRepositoryRole.TableNoTracking;
+                        ViewBag.ListofRoles = role;
+                        return Json(new { isSuccess = true, html = RenderRazorViewToString("EditUser.cshtml", registertDto) });
 
+                        //return PartialView("EditUser", registerEditDto);
+                    }
                 }
-                else if(user.PhoneNumber != registerEditDto.PhoneNumber.FixTextUpper())
+                else if (user.PhoneNumber != registertDto.PhoneNumber.FixTextUpper())
                 {
-                    
+                    var userExist = await _userRepository.GetByPhoneNumberAsync(registertDto.PhoneNumber, cancellationToken);
+                    if (userExist != null)
+                    {
+                        ModelState.AddModelError("PhoneNumber", "شماره همراه تکراری است");
+                        var role = _eFRepositoryRole.TableNoTracking;
+                        ViewBag.ListofRoles = role;
+                        return RedirectToAction("Index", registertDto);
+                    }
                 }
-                else
-                {
 
-                }
+                // در صورت موفقیت، کاربر را ویرایش کنید و به صفحه اصلی بازگردید
+                // کد ویرایش کاربر
+                return Json(new { isSuccess = true });
             }
-            return PartialView("EditUser");
+
+            // در صورت وجود خطا، PartialView را با خطاها بازگردانید
+            var roles = _eFRepositoryRole.TableNoTracking;
+            ViewBag.ListofRoles = roles;
+            return PartialView("EditUser", registertDto);
+        }
+
+        //var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+        private string RenderRazorViewToString(string viewName, object model)
+        {
+            ViewData.Model = model;
+            using (var sw = new StringWriter())
+            {
+                var viewResult = _viewEngine.GetView("/Areas/Admin/Views/Users/", viewName, false);
+                if (viewResult.View == null)
+                {
+
+                    throw new ArgumentNullException($"View '{viewName}' not found.");
+                }
+
+                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw, new HtmlHelperOptions());
+                viewResult.View.RenderAsync(viewContext);
+                return sw.GetStringBuilder().ToString();
+            }
         }
     }
 }

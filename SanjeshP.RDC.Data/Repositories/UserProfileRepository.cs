@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.RDC.Data.Repositories
 {
-    internal class UserProfileRepository : EFRepository<UserProfile>, IUserProfilesRepository, IScopedDependency
+    public class UserProfileRepository : EFRepository<UserProfile>, IUserProfilesRepository, IScopedDependency
     {
         public UserProfileRepository(ApplicationDbContext dbContext) : base(dbContext)
         {

@@ -27,7 +27,7 @@ namespace SanjeshP.RDC.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSession();
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.Configure<SiteSettings>(Configuration.GetSection(nameof(SiteSettings)));
             services.InitializeAutoMapper();
             services.AddDbContext(Configuration);

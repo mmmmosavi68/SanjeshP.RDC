@@ -173,12 +173,13 @@
             $("#body_Modal_AddEdit").load("/Admin/Users/DetailUser?userid=" + UserID);
         };
 
-             function EditUser(UserID) {
+        function EditUser(UserID) {
             $("#lbl_Modal_AddEdit").html("ویرایش کاربر");
             $('#Modal_AddEdit').modal('show');
-            $("#body_Modal_AddEdit").html("در حال بارگذاری...");
+            $("#body_Modal_AddEdit").html("");
             $("#body_Modal_AddEdit").load("/Admin/Users/EditUser?userid=" + UserID);
-        }
+        };
+
         // function DeleteUser(UserID) {
         //     $.get("/UserProfile/DeleteUser?userid=" + UserID);
         //     $("#tr_" + UserID).hide('slow');
@@ -193,33 +194,5 @@
         // };
 
 
-    </script>
-
-    <script>
-
-         $(document).ready(function () {
-            $('#edit-user-form').submit(function (event) {
-                event.preventDefault(); // جلوگیری از ارسال فرم به صورت پیش‌فرض
-
-                var form = $(this);
-                $.ajax({
-                    type: form.attr('method'),
-                    url: form.attr('action'),
-                    data: form.serialize(),
-                    success: function (response) {
-                        if (response.isSuccess) {
-                            // بارگذاری پاسخ در مودال
-                            $("#body_Modal_AddEdit").html(response.html);
-                        } else {
-                            // در صورت وجود خطا، بارگذاری پاسخ در مودال
-                            $("#body_Modal_AddEdit").html(response.html);
-                        }
-                    },
-                    error: function () {
-                        alert('خطایی رخ داده است. لطفاً دوباره امتحان کنید.');
-                    }
-                });
-            });
-        });
     </script>
 }

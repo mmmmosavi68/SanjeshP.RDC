@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SanjeshP.RDC.Entities.User;
 using Microsoft.AspNetCore.Http;
+using SanjeshP.RDC.Data.Repositories;
 
 namespace WebFramework.Configuration
 {
@@ -39,6 +40,9 @@ namespace WebFramework.Configuration
                 //This line is no longer needed.
                 //.ConfigureWarnings(warning => warning.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
+
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserProfilesRepository, UserProfileRepository>();
         }
 
         public static void AddMinimalMvc(this IServiceCollection services)
