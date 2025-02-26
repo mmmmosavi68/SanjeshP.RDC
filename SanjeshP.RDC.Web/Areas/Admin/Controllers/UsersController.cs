@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Entities.Menu;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +30,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserProfilesRepository _userProfilesRepository;
         private readonly IEFRepository<Role> _eFRepositoryRole;
         private readonly IEFRepository<Menu> _eFRepositoryListMenu;
+        private readonly IUserTokenRepository _userTokenRepository;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -37,7 +40,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IUserProfilesRepository userProfilesRepository
                                 , IEFRepository<Role> eFRepositoryRole
                                 , IEFRepository<Menu> eFRepositoryListMenu
-                                , IView_UserMenubarRepository view_UserMenubarRepository)
+                                , IView_UserMenubarRepository view_UserMenubarRepository
+                                , IUserTokenRepository userTokenRepository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -46,6 +50,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userProfilesRepository = userProfilesRepository;
             _eFRepositoryRole = eFRepositoryRole;
             _eFRepositoryListMenu = eFRepositoryListMenu;
+            _userTokenRepository = userTokenRepository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -212,7 +217,34 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return PartialView("EditUser", registertDto);
         }
 
-        //var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(Guid userid, CancellationToken cancellationToken)
+        {
+            if (userid == null)
+            {
+                return Json(new { isSuccess = false, message = "کاربری جهت حذف ارسال نشده است یا خطایی رخ داده." });
+            }
+            var curentUserToken = User.Identity.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            if (token != null)
+            {
+                if (userid == token.UserId)
+                {
+                    return Json(new { isSuccess = false, message = "امکان حذف کاربری جاری وجود ندارد." });
+                }
+            }
+
+            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
+            if (user == null)
+            {
+                return Json(new { isSuccess = false, message = "کاربری یافت نشد." });
+            }
+
+            await _userRepository.DeleteAsync(user, cancellationToken);
+
+            return Json(new { isSuccess = true });
+        }
+
         private string RenderRazorViewToString(string viewName, object model)
         {
             ViewData.Model = model;

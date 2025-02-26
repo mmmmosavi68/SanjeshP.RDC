@@ -129,7 +129,9 @@
 @section scripts {
 
     <script src="~/admin/plugins/jquery/jquery.min.js"></script>
+    <script src="~/admin/plugins/bootstrap/js/bootstrap.min.js"></script>
     <script src="~/admin/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/bootstrap-confirmation.min.js"></script>
     <link href="~/admin/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <script src="~/admin/plugins/jquery-ui/jquery-ui.min.js"></script>
     <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
@@ -144,6 +146,10 @@
     <script src="~/admin/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
     <script src="~/admin/plugins/datatables-buttons/js/buttons.print.min.js"></script>
     <script src="~/admin/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     <script type="text/javascript">
         $(function () {
             $('#tbl_user').DataTable({
@@ -166,6 +172,15 @@
             "handle": ".modal-header"
         });
 
+        $('[data-toggle="DeleteUser"]').confirmation({
+            title: 'آیا از حذف مطمئن هستید؟',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            onConfirm: function () { DeleteUser($(this).attr('id')) }
+        });
+
         function DetailUser(UserID) {
             $("#lbl_Modal_AddEdit").html("اطلاعات کاربر ");
             $('#Modal_AddEdit').modal('show');
@@ -179,10 +194,60 @@
             $("#body_Modal_AddEdit").html("در حال بارگذاری...");
             $("#body_Modal_AddEdit").load("/Admin/Users/EditUser?userid=" + UserID);
         }
-        // function DeleteUser(UserID) {
-        //     $.get("/UserProfile/DeleteUser?userid=" + UserID);
-        //     $("#tr_" + UserID).hide('slow');
-        // };
+
+        function DeleteUser(UserID) {
+             $.ajax({
+                    method: "POST",
+                    url: "/Admin/Users/DeleteUser?userid=" + UserID,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                             $("#tr_" + UserID).addClass("bg-danger").hide('slow', function() {
+                                //location.reload(); // بارگذاری مجدد صفحه پس از حذف کاربر
+                            });
+
+                        } else {
+                             Toastify({
+                                text: response.message,
+                                text: "کاربر با موفقیت حذف شد",
+                                duration: 5000,
+                                gravity: "bottom", // نمایش در پایین صفحه
+                                position: "left", // نمایش در سمت چپ صفحه
+                                backgroundColor: "#4caf50",
+                                className: "toast-with-progress",
+                                close: false,
+                                rtl: false,
+                                theme: "light",
+                                stopOnFocus: true,
+                                offset: {
+                                    x: 0, // حرکت افقی
+                                    y: 0  // حرکت عمودی
+                                },
+                                onClick: function() { } // باید یک تابع خالی باشد
+                            }).showToast();
+                        }
+                    },
+                    error: function () {
+                         Toastify({
+                            text: 'خطایی رخ داده است. لطفاً دوباره امتحان کنید.',
+                           text: "کاربر با موفقیت حذف شد",
+                            duration: 5000,
+                            gravity: "bottom", // نمایش در پایین صفحه
+                            position: "left", // نمایش در سمت چپ صفحه
+                            backgroundColor: "#4caf50",
+                            className: "toast-with-progress",
+                            close: false,
+                            rtl: false,
+                            theme: "light",
+                            stopOnFocus: true,
+                            offset: {
+                                x: 0, // حرکت افقی
+                                y: 0  // حرکت عمودی
+                            },
+                            onClick: function() { } // باید یک تابع خالی باشد
+                        }).showToast();
+                    }
+                });
+        };
 
         // function AccessMenu(UserID) {
         //     $("#lbl_Modal_AddEdit").html("اعمال دسترسی");
