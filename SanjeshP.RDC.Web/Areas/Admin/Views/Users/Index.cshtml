@@ -57,7 +57,7 @@
                     <th scope="row">@i</th>
                     <th scope="row">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input " id="@item.UserId">
+                            <input type="checkbox" class="custom-control-input" id="@item.UserId">
                             <label class="custom-control-label" for="@item.UserId"></label>
                         </div>
 
@@ -125,31 +125,14 @@
             </div>
         </div>
     </div>
+
+
 </div>
 @section scripts {
-
-    <script src="~/admin/plugins/jquery/jquery.min.js"></script>
-    <script src="~/admin/plugins/bootstrap/js/bootstrap.min.js"></script>
-    <script src="~/admin/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/bootstrap-confirmation.min.js"></script>
-    <link href="~/admin/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
-    <script src="~/admin/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
     <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
     <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="~/admin/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="~/admin/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="~/admin/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <script src="~/admin/plugins/jszip/jszip.min.js"></script>
-    <script src="~/admin/plugins/pdfmake/pdfmake.min.js"></script>
-    <script src="~/admin/plugins/pdfmake/vfs_fonts.js"></script>
-    <script src="~/admin/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
-    <script src="~/admin/plugins/datatables-buttons/js/buttons.print.min.js"></script>
-    <script src="~/admin/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
     <script type="text/javascript">
         $(function () {
             $('#tbl_user').DataTable({
@@ -174,10 +157,10 @@
 
         $('[data-toggle="DeleteUser"]').confirmation({
             title: 'آیا از حذف مطمئن هستید؟',
-            btnOkClass: 'btn btn-sm btn-danger',
-            btnOkLabel: 'حذف',
             btnCancelClass: 'btn btn-sm btn-primary',
             btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
             onConfirm: function () { DeleteUser($(this).attr('id')) }
         });
 
@@ -188,12 +171,20 @@
             $("#body_Modal_AddEdit").load("/Admin/Users/DetailUser?userid=" + UserID);
         };
 
-             function EditUser(UserID) {
+        function EditUser(UserID) {
             $("#lbl_Modal_AddEdit").html("ویرایش کاربر");
             $('#Modal_AddEdit').modal('show');
             $("#body_Modal_AddEdit").html("در حال بارگذاری...");
             $("#body_Modal_AddEdit").load("/Admin/Users/EditUser?userid=" + UserID);
         }
+
+         function AccessMenu(UserID) {
+            $("#lbl_Modal_AddEdit").html("اعمال دسترسی");
+            $('#Modal_AddEdit').modal('show');
+            $("#body_Modal_AddEdit").html("");
+            $("#body_Modal_AddEdit").load("/Admin/Users/UserAccessMenu?userid=" + UserID);
+
+        };
 
         function DeleteUser(UserID) {
              $.ajax({
@@ -202,89 +193,55 @@
                     success: function (response) {
                         if (response.isSuccess) {
                              $("#tr_" + UserID).addClass("bg-danger").hide('slow', function() {
+                                  Toast.fire({
+                                        icon: 'success',
+                                        title: response.message,
+                                        customClass: 'swal2-success'
+                                  })
                                 //location.reload(); // بارگذاری مجدد صفحه پس از حذف کاربر
                             });
 
                         } else {
-                             Toastify({
-                                text: response.message,
-                                text: "کاربر با موفقیت حذف شد",
-                                duration: 5000,
-                                gravity: "bottom", // نمایش در پایین صفحه
-                                position: "left", // نمایش در سمت چپ صفحه
-                                backgroundColor: "#4caf50",
-                                className: "toast-with-progress",
-                                close: false,
-                                rtl: false,
-                                theme: "light",
-                                stopOnFocus: true,
-                                offset: {
-                                    x: 0, // حرکت افقی
-                                    y: 0  // حرکت عمودی
-                                },
-                                onClick: function() { } // باید یک تابع خالی باشد
-                            }).showToast();
+                             Toast.fire({
+                                    icon: 'warning',
+                                    title: response.message,
+                                    customClass: 'swal2-warning'
+                             })
                         }
                     },
                     error: function () {
-                         Toastify({
-                            text: 'خطایی رخ داده است. لطفاً دوباره امتحان کنید.',
-                           text: "کاربر با موفقیت حذف شد",
-                            duration: 5000,
-                            gravity: "bottom", // نمایش در پایین صفحه
-                            position: "left", // نمایش در سمت چپ صفحه
-                            backgroundColor: "#4caf50",
-                            className: "toast-with-progress",
-                            close: false,
-                            rtl: false,
-                            theme: "light",
-                            stopOnFocus: true,
-                            offset: {
-                                x: 0, // حرکت افقی
-                                y: 0  // حرکت عمودی
-                            },
-                            onClick: function() { } // باید یک تابع خالی باشد
-                        }).showToast();
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
+                            customClass: 'swal2-error'
+                        })
                     }
                 });
         };
+     
+        //  $(document).ready(function () {
+        //     $('#edit-user-form').submit(function (event) {
+        //         event.preventDefault(); // جلوگیری از ارسال فرم به صورت پیش‌فرض
 
-        // function AccessMenu(UserID) {
-        //     $("#lbl_Modal_AddEdit").html("اعمال دسترسی");
-        //     $('#Modal_AddEdit').modal('show');
-        //     $("#body_Modal_AddEdit").html("");
-        //     $("#body_Modal_AddEdit").load("/UserProfile/UserAccessMenu?userid=" + UserID);
-
-        // };
-
-
-    </script>
-
-    <script>
-
-         $(document).ready(function () {
-            $('#edit-user-form').submit(function (event) {
-                event.preventDefault(); // جلوگیری از ارسال فرم به صورت پیش‌فرض
-
-                var form = $(this);
-                $.ajax({
-                    type: form.attr('method'),
-                    url: form.attr('action'),
-                    data: form.serialize(),
-                    success: function (response) {
-                        if (response.isSuccess) {
-                            // بارگذاری پاسخ در مودال
-                            $("#body_Modal_AddEdit").html(response.html);
-                        } else {
-                            // در صورت وجود خطا، بارگذاری پاسخ در مودال
-                            $("#body_Modal_AddEdit").html(response.html);
-                        }
-                    },
-                    error: function () {
-                        alert('خطایی رخ داده است. لطفاً دوباره امتحان کنید.');
-                    }
-                });
-            });
-        });
+        //         var form = $(this);
+        //         $.ajax({
+        //             type: form.attr('method'),
+        //             url: form.attr('action'),
+        //             data: form.serialize(),
+        //             success: function (response) {
+        //                 if (response.isSuccess) {
+        //                     // بارگذاری پاسخ در مودال
+        //                     $("#body_Modal_AddEdit").html(response.html);
+        //                 } else {
+        //                     // در صورت وجود خطا، بارگذاری پاسخ در مودال
+        //                     $("#body_Modal_AddEdit").html(response.html);
+        //                 }
+        //             },
+        //             error: function () {
+        //                 alert('خطایی رخ داده است. لطفاً دوباره امتحان کنید.');
+        //             }
+        //         });
+        //     });
+        // });
     </script>
 }

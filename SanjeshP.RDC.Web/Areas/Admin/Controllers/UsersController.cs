@@ -4,11 +4,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
+using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
+using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
 using System;
 using System.Collections.Generic;
@@ -29,7 +33,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUserProfilesRepository _userProfilesRepository;
         private readonly IEFRepository<Role> _eFRepositoryRole;
-        private readonly IEFRepository<Menu> _eFRepositoryListMenu;
+        private readonly IMenuRepository _menuRepository;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
@@ -39,7 +43,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IUserRepository userRepository
                                 , IUserProfilesRepository userProfilesRepository
                                 , IEFRepository<Role> eFRepositoryRole
-                                , IEFRepository<Menu> eFRepositoryListMenu
+                                , IMenuRepository menuRepository
                                 , IView_UserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository)
         {
@@ -49,7 +53,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userRepository = userRepository;
             _userProfilesRepository = userProfilesRepository;
             _eFRepositoryRole = eFRepositoryRole;
-            _eFRepositoryListMenu = eFRepositoryListMenu;
+            _menuRepository = menuRepository;
             _userTokenRepository = userTokenRepository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
@@ -242,7 +246,12 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             await _userRepository.DeleteAsync(user, cancellationToken);
 
-            return Json(new { isSuccess = true });
+            return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
+        }
+
+       public IActionResult UserAccessMenu(Guid userid)
+        {
+            return ViewComponent("UserAccessMenu", new { userid = userid });
         }
 
         private string RenderRazorViewToString(string viewName, object model)

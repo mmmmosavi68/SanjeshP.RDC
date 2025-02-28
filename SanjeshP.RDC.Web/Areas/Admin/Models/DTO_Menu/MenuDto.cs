@@ -11,6 +11,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public string Title { get; set; }
         public Guid? ParentId { get; set; }
         public int? PageCode { get; set; }
+        public string Area { get; set; }
         public string ControllerName { get; set; }
         public string ActionName { get; set; }
         public bool? ShowMenu { get; set; }
@@ -54,9 +55,29 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 
     }
 
+   
     public class UserAccessMenuWithMenubar
     {
         public ICollection<MenuSelectTreeJsDto> menuSelectTreeJsDtos { get; set; }
         public List<string> UserAccessMenu { get; set; }
     }
+
+    #region MyRegion
+    public class ListMenuUserAccessDto
+    {
+        public Guid id { get; set; }
+        public string parent { get; set; }
+        public string text { get; set; }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public bool Person_Checkecd { get; set; }
+
+        public ListMenuUserAccessStateDto state { get; set; }
+    }
+    public class ListMenuUserAccessStateDto
+    {
+        public bool opened { get; set; }
+        public bool selected { get; set; }
+    }
+    #endregion Fore Tree view js
 }

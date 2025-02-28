@@ -28,15 +28,15 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
             if (CurentView_UserMenubar == null)
             {
                 // Handle the case where _view_UserMenubar is null
-                return View(new List<ListMenuDto>());
+                return View(new List<MenuDto>());
             }
 
-            List<ListMenuDto> FinalList = new List<ListMenuDto>();
+            List<MenuDto> FinalList = new List<MenuDto>();
             foreach (var item in CurentView_UserMenubar)
             {
                 if (item.ParentId == null)
                 {
-                    FinalList.Add(new ListMenuDto
+                    FinalList.Add(new MenuDto
                     {
                         CssClass = item.CssClass,
                         Icon = item.Icon,
@@ -57,17 +57,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
 
             return View( FinalList);
         }
-
-
-
-        private List<ListMenuDto> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
+        private List<MenuDto> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
         {
-            List<ListMenuDto> FinalList = new List<ListMenuDto>();
+            List<MenuDto> FinalList = new List<MenuDto>();
             foreach (var item in _List)
             {
                 if (item.ParentId == _id)
                 {
-                    FinalList.Add(new ListMenuDto
+                    FinalList.Add(new MenuDto
                     {
                         CssClass = item.CssClass,
                         Icon = item.Icon,

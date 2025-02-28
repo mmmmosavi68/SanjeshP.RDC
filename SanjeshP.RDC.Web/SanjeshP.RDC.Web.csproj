@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Admin\Models\DTO_Menu\ListMenuDto.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\Admin\plugins\datatable\jquery-3.5.1.js" />
     <None Include="wwwroot\Admin\plugins\datatable\jquery.dataTables.min.js" />
     <None Include="wwwroot\font\glyphicons-halflings-regular.svg" />
