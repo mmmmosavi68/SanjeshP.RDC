@@ -22,9 +22,10 @@
     </div>
 </div>
 <span id="idshow"></span>
+
+
 <link href="/Admin/plugins/jstree/style.min.css" rel="stylesheet" />
 <script src="/Admin/plugins/jstree/jstree.min.js"></script>
-
 <script>
     $(function () {
       var nodeid;
@@ -55,6 +56,8 @@
                   $('#deliverables').jstree(true).hide_all();
               }
           })
+
+          console.log(tree)
           $('#deliverable_search').keyup(function () {
               $('#accesstree').jstree(true).show_all();
               $('#accesstree').jstree('search', $(this).val());

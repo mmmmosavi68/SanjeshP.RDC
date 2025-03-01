@@ -257,10 +257,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<ActionResult<string>> GetUserAccessMenuItem(Guid userid, CancellationToken cancellationToken)
         {
-            List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenu(userid, cancellationToken);
-            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
-
             #region Convert ListMenu to ListMenuUserAccessDto for use jstree
+            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
             List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
             foreach (var item in listMenus)
             {
@@ -286,6 +284,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             #endregion
 
             #region Add User Access item
+            List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenu(userid, cancellationToken);
             foreach (var item in view_UserMenubars)
             {
                 foreach (var item2 in listMenuUserAccessDtos)
@@ -293,6 +292,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     if (item.Id.Equals(item2.id))
                     {
                         item2.Person_Checkecd = item.Person_Checkecd;
+                        item2.Group_Checkecd = item.Group_Checkecd;
                     }
                 }
             }
@@ -312,16 +312,22 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                             break;
                         }
                     }
-                   
+
                     if (result)
                     {
                         ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
                         listMenuUserAccessStateDto.selected = true;
                         listMenuUserAccessStateDto.opened = true;
+                        listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
                         item.state = listMenuUserAccessStateDto;
-                        if (item.id == new Guid("c23a201c-4441-492a-aab5-e50a84ed3fb9"))
+                        if (item.Group_Checkecd == true)
                         {
-                            listMenuUserAccessStateDto.disabled = true;
+                            JStreeAttr jStreeAttr = new JStreeAttr()
+                            {
+                                href = "test1",
+                                title = "TitleTest"
+                            };
+                            item.a_attr = jStreeAttr;
                         }
                     }
                     else
@@ -329,10 +335,16 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                         ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
                         listMenuUserAccessStateDto.selected = false;
                         listMenuUserAccessStateDto.opened = false;
+                        listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
                         item.state = listMenuUserAccessStateDto;
-                        if (item.id == new Guid("c23a201c-4441-492a-aab5-e50a84ed3fb9"))
+                        if (item.Group_Checkecd == true)
                         {
-                            listMenuUserAccessStateDto.disabled = true;
+                            JStreeAttr jStreeAttr = new JStreeAttr()
+                            {
+                                href = "test1",
+                                title = "TitleTest"
+                            };
+                            item.a_attr = jStreeAttr;
                         }
                     }
                 }
