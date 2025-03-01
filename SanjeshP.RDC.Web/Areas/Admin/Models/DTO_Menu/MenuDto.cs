@@ -55,7 +55,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 
     }
 
-   
+
     public class UserAccessMenuWithMenubar
     {
         public ICollection<MenuSelectTreeJsDto> menuSelectTreeJsDtos { get; set; }
@@ -78,6 +78,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
     {
         public bool opened { get; set; }
         public bool selected { get; set; }
+        public bool disabled { get; set; }
+
     }
     #endregion Fore Tree view js
 }

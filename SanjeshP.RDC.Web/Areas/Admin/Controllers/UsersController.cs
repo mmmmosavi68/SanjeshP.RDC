@@ -249,9 +249,98 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
         }
 
-       public IActionResult UserAccessMenu(Guid userid)
+        public IActionResult UserAccessMenu(Guid userid)
         {
-            return ViewComponent("UserAccessMenu", new { userid = userid });
+            ViewData["userId"] = userid;
+            return PartialView("UserAccessMenu");
+        }
+
+        public async Task<ActionResult<string>> GetUserAccessMenuItem(Guid userid, CancellationToken cancellationToken)
+        {
+            List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenu(userid, cancellationToken);
+            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
+
+            #region Convert ListMenu to ListMenuUserAccessDto for use jstree
+            List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
+            foreach (var item in listMenus)
+            {
+                if (item.ParentId == null)
+                {
+                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    {
+                        id = item.Id,
+                        parent = "#",
+                        text = item.Title,
+                    });
+                }
+                else
+                {
+                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    {
+                        id = item.Id,
+                        parent = item.ParentId.ToString(),
+                        text = item.Title,
+                    });
+                }
+            }
+            #endregion
+
+            #region Add User Access item
+            foreach (var item in view_UserMenubars)
+            {
+                foreach (var item2 in listMenuUserAccessDtos)
+                {
+                    if (item.Id.Equals(item2.id))
+                    {
+                        item2.Person_Checkecd = item.Person_Checkecd;
+                    }
+                }
+            }
+            #endregion
+
+            #region Add options jstree
+            foreach (var item in listMenuUserAccessDtos)
+            {
+                if (item.Person_Checkecd == true)
+                {
+                    var result = true;
+                    foreach (var item2 in listMenuUserAccessDtos)
+                    {
+                        if (item2.parent == item.id.ToString())
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                   
+                    if (result)
+                    {
+                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
+                        listMenuUserAccessStateDto.selected = true;
+                        listMenuUserAccessStateDto.opened = true;
+                        item.state = listMenuUserAccessStateDto;
+                        if (item.id == new Guid("c23a201c-4441-492a-aab5-e50a84ed3fb9"))
+                        {
+                            listMenuUserAccessStateDto.disabled = true;
+                        }
+                    }
+                    else
+                    {
+                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
+                        listMenuUserAccessStateDto.selected = false;
+                        listMenuUserAccessStateDto.opened = false;
+                        item.state = listMenuUserAccessStateDto;
+                        if (item.id == new Guid("c23a201c-4441-492a-aab5-e50a84ed3fb9"))
+                        {
+                            listMenuUserAccessStateDto.disabled = true;
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            var json = JsonConvert.SerializeObject(listMenuUserAccessDtos);
+            return (json);
         }
 
         private string RenderRazorViewToString(string viewName, object model)
