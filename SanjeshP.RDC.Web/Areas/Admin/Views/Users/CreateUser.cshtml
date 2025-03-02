@@ -2,8 +2,12 @@
 
 <div class="row">
     <div class="col-md-12">
-        <form asp-action="EditUser">
+        <form id="create-user-form" asp-action="CreateUser" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="RoleId" class="control-label col-sm-4"></label>
+                <select asp-for="RoleId" class="form-control  col-sm-7 d-inline-block" asp-items="@(new SelectList(ViewBag.ListofRoles,"Id","RoleTitleFa"))"></select>
+            </div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label col-sm-4"></label>
                 <input asp-for="FirstName" class="form-control col-sm-7 d-inline-block" />
@@ -15,14 +19,14 @@
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label col-sm-4"></label>
+                <input asp-for="PhoneNumber" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="NationalCode" class="control-label col-sm-4"></label>
                 <input asp-for="NationalCode" class="form-control col-sm-7 d-inline-block" />
                 <span asp-validation-for="NationalCode" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserName" class="control-label col-sm-4"></label>
-                <input asp-for="UserName" class="form-control col-sm-7 d-inline-block" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EmailAddress" class="control-label col-sm-4"></label>
@@ -30,27 +34,26 @@
                 <span asp-validation-for="EmailAddress" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="PhoneNumber" class="control-label col-sm-4"></label>
-                <input asp-for="PhoneNumber" class="form-control col-sm-7 d-inline-block" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                <label asp-for="UserName" class="control-label col-sm-4"></label>
+                <input asp-for="UserName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="RoleId" class="control-label col-sm-4"></label>
-                <select asp-for="RoleId" class="form-control  col-sm-7 d-inline-block" asp-items="@(new SelectList(ViewBag.ListofRoles,"Id","RoleTitle_Fa"))"></select>
+                <label asp-for="Password" class="control-label col-sm-4"></label>
+                <input asp-for="Password" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="custom-control custom-checkbox">
-                    <label>
-                        <input type="checkbox" value="IsActive" asp-for="IsActive" class="custom-control-input" />
-                        <label class="custom-control-label" for="@Html.DisplayFor(model => model.IsActive)">@Html.DisplayNameFor(model => model.IsActive)</label>
+                    <input type="checkbox" asp-for="IsActive" class="custom-control-input" id="IsActive" />
+                    <label class="custom-control-label" for="IsActive">
+                        @Html.DisplayNameFor(model => model.IsActive)
                     </label>
-                </div>
+                </div>  
             </div>
-
             @Html.HiddenFor(model => model.UserId)
-
             <div class="form-group">
-                <input type="submit" value="ویرایش" class="btn btn-warning" />
+                <input type="submit" value="افزودن کاربر" class="btn btn-success" />
             </div>
         </form>
     </div>

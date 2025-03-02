@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using SanjeshP.RDC.Data.Contracts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SanjeshP.RDC.Data.Repositories
 {
@@ -190,5 +191,10 @@ namespace SanjeshP.RDC.Data.Repositories
                 reference.Load();
         }
         #endregion
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

@@ -170,7 +170,12 @@
             $("#body_Modal_AddEdit").html("");
             $("#body_Modal_AddEdit").load("/Admin/Users/DetailUser?userid=" + UserID);
         };
-
+        function CreateUser() {
+            $("#lbl_Modal_AddEdit").html("افزودن کاربر ");
+            $('#Modal_AddEdit').modal('show');
+            $("#body_Modal_AddEdit").html("");
+            $("#body_Modal_AddEdit").load("/Admin/Users/CreateUser");
+        };
         function EditUser(UserID) {
             $("#lbl_Modal_AddEdit").html("ویرایش کاربر");
             $('#Modal_AddEdit').modal('show');
@@ -196,7 +201,6 @@
                                   Toast.fire({
                                         icon: 'success',
                                         title: response.message,
-                                        customClass: 'swal2-success'
                                   })
                                 //location.reload(); // بارگذاری مجدد صفحه پس از حذف کاربر
                             });
@@ -205,7 +209,6 @@
                              Toast.fire({
                                     icon: 'warning',
                                     title: response.message,
-                                    customClass: 'swal2-warning'
                              })
                         }
                     },
@@ -213,7 +216,6 @@
                         Toast.fire({
                             icon: 'error',
                             title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
-                            customClass: 'swal2-error'
                         })
                     }
                 });

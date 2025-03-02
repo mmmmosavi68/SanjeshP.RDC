@@ -35,5 +35,8 @@ namespace SanjeshP.RDC.Data.Contracts
         Task UpdateAsync(TEntity entity, CancellationToken cancellationToken, bool saveNow = true);
         void UpdateRange(IEnumerable<TEntity> entities, bool saveNow = true);
         Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken, bool saveNow = true);
+
+        Task SaveChangesAsync(CancellationToken cancellationToken);
+      
     }
 }
