@@ -28,40 +28,95 @@
 <script src="/Admin/plugins/jstree/jstree.min.js"></script>
 <script>
     $(function () {
-      var nodeid;
-      var userid = ('@ViewData["userId"]');
-      $.post("/Admin/Users/GetUserAccessMenuItem?userid=" + userid, function (data) {
-          createJSTree(JSON.parse(data));  // Get Data For Tree View
-      });
-      // Create Tree View
-      function createJSTree(data) {
-          var tree = $('#accesstree').jstree({
-              "core": {
-                  "data": data
-              },
-              "check_callback": true,
-              "checkbox": {
-                  "keep_selected_style": true
-              },
-              "demo": {
-                  "icon": "glyphicon glyphicon-ok"
-              },
-              'search': {
-                  'case_insensitive': true,
-                  'show_only_matches': true
-              },
-              'plugins': ['search', 'checkbox', 'wholerow']
-          }).on('search.jstree', function (nodes, str, res) {
-              if (str.nodes.length === 0) {
-                  $('#deliverables').jstree(true).hide_all();
-              }
-          })
+        var nodeid;
+        var userid = ('@ViewData["userId"]');
+        $.post("/Admin/Users/GetUserAccessMenuItem?userid=" + userid, function (data) {
+            createJSTree(JSON.parse(data));  // Get Data For Tree View
+        });
+        // Create Tree View
+        function createJSTree(data) {
 
-          console.log(tree)
-          $('#deliverable_search').keyup(function () {
-              $('#accesstree').jstree(true).show_all();
-              $('#accesstree').jstree('search', $(this).val());
-          });
-      };
+            $("my_spinner").addClass("show");
+            var tree = $('#accesstree').jstree({
+                "core": {
+                    "data": data
+                },
+                "check_callback": true,
+                "checkbox": {
+                    "keep_selected_style": true
+                },
+                "demo": {
+                    "icon": "glyphicon glyphicon-ok"
+                },
+                'search': {
+                    'case_insensitive': true,
+                    'show_only_matches': true
+                },
+                'plugins': ['search', 'checkbox', 'wholerow']
+            }).on('search.jstree', function (nodes, str, res) {
+                if (str.nodes.length === 0) {
+                    $('#deliverables').jstree(true).hide_all();
+                }
+            })
+
+            console.log(tree)
+            $('#deliverable_search').keyup(function () {
+                $('#accesstree').jstree(true).show_all();
+                $('#accesstree').jstree('search', $(this).val());
+            });
+        };
     });
+
+    $('.btnGetCheckedItem').click(function () {
+        document.getElementById("overlay").style.display = "flex";
+        var checked_ids = [];
+        var selectedNodes = $('#accesstree').jstree("get_undetermined", true);
+        $.each(selectedNodes, function () {
+            checked_ids.push(this.id);
+        });
+        var selectedNodes = $('#accesstree').jstree("get_selected", true);
+        $.each(selectedNodes, function () {
+            checked_ids.push(this.id);
+        });
+      
+        $.ajax({
+            method: "POST",
+            url: "/Admin/Users/Modify_SelectedNodes_SelectedUser?list=" + checked_ids + "&userId=" + '@ViewData["userId"]',
+            success: function (response) {
+                if (response.isSuccess) {
+                    document.getElementById("overlay").style.display = "none";
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message,
+                       
+                    })
+                } else {
+                    document.getElementById("overlay").style.display = "none";
+                    Toast.fire({
+                        icon: 'warning',
+                        title: response.message,
+                       
+                    })
+                }
+            },
+            error: function () {
+                document.getElementById("overlay").style.display = "none";
+                Toast.fire({
+                    icon: 'error',
+                    title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
+                   
+                })
+            }
+        });
+    });
+
+    var open = false;
+    function CollapseAll() {
+        $("#accesstree").jstree('close_all');
+        open = false;
+    }
+    function ExpandAll() {
+        $("#accesstree").jstree('open_all');
+        open = true;
+    }
 </script>

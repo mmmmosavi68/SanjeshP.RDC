@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/Admin/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">    <!-- overlayScrollbars -->
     <link rel="stylesheet" href="/Admin/css/rtl.css">
     <link rel="stylesheet" href="/Admin/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+    <link rel="stylesheet" href="/css/spinner.css" />
     <style>
         .content-wrapper {
             background-image: url(/img/5.jpg);
@@ -150,6 +151,13 @@
             </div>
         </footer>
     </div>
+
+    <div id="overlay" onclick="off()">
+        <div class="w-100 d-flex justify-content-center align-items-center">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
     <script src="/Admin/plugins/jquery/jquery.min.js"></script>    <!-- jQuery v3.6.0 -->
     <script src="/Admin/plugins/jquery-ui/jquery-ui.min.js"></script>    <!-- jQuery UI 1.11.4 -->
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -169,24 +177,33 @@
             $('a').tooltip()
         })
         var Toast = Swal.mixin({
-          toast: true,
-          position: 'top',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar:true,
-          showCloseButton:true,
-          grow:false,
-          didOpen: (toast) => {
-              toast.onmouseenter = Swal.stopTimer;
-              toast.onmouseleave = Swal.resumeTimer;
-           }
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 6000,
+            timerProgressBar: true,
+            showCloseButton: true,
+            grow: false,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
         })
     </script>
     <script>
-        function test333(){
-                   alert('33333333333333333')
-               }
+        function test333() {
+            alert('33333333333333333')
+        }
+        function on() {
+            document.getElementById("overlay").style.display = "flex";
+        }
+
+        function off() {
+            document.getElementById("overlay").style.display = "none";
+        }
     </script>
+
+
     @RenderSection("Scripts", required: false)
 </body>
 </html>

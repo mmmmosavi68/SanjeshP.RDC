@@ -14,6 +14,7 @@ using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
+using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,6 +36,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IEFRepository<Role> _eFRepositoryRole;
         private readonly IMenuRepository _menuRepository;
         private readonly IUserTokenRepository _userTokenRepository;
+        private readonly IAccessMenuRepository _accessMenuRepository;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -45,7 +47,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IEFRepository<Role> eFRepositoryRole
                                 , IMenuRepository menuRepository
                                 , IView_UserMenubarRepository view_UserMenubarRepository
-                                , IUserTokenRepository userTokenRepository)
+                                , IUserTokenRepository userTokenRepository
+                                , IAccessMenuRepository accessMenuRepository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -55,6 +58,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _eFRepositoryRole = eFRepositoryRole;
             _menuRepository = menuRepository;
             _userTokenRepository = userTokenRepository;
+            _accessMenuRepository = accessMenuRepository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -249,6 +253,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
         }
 
+        #region Get menu and userAccess for show jstree
         public IActionResult UserAccessMenu(Guid userid)
         {
             ViewData["userId"] = userid;
@@ -354,7 +359,54 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             var json = JsonConvert.SerializeObject(listMenuUserAccessDtos);
             return (json);
         }
+        #endregion
 
+        public async Task<IActionResult> Modify_SelectedNodes_SelectedUser(string list, Guid userId, CancellationToken cancellationToken)
+        {
+            List<AccessMenus> userAccessMenus = await _accessMenuRepository.GetAllByUserIdAsync(userId, cancellationToken);
+            //Remove all access
+            if (list is null)
+            {
+                foreach (var item in userAccessMenus)
+                {
+                    item.IsDelete = true;
+                    await _accessMenuRepository.UpdateAsync(item, cancellationToken);
+                }
+            }
+            else
+            {
+                string[] strArray = list.Split(",");
+                foreach (var item in strArray)
+                {
+                    bool isExist = userAccessMenus.Any(ua => ua.ListMenuId.Equals(new Guid(item)));
+                    if (!isExist)
+                    {
+                        AccessMenus NewAccess = new AccessMenus();
+                        NewAccess.ListMenuId = new Guid(item);
+                        NewAccess.UserId = userId;
+                        NewAccess.Creator = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier));
+                        NewAccess.IsDelete = false;
+                        NewAccess.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                        await _accessMenuRepository.AddAsync(NewAccess, cancellationToken);
+                    }
+                }
+                foreach (var item in userAccessMenus)
+                {
+                    bool isExist = strArray.Any(ua => ua.Equals(item.ListMenuId.ToString()));
+                    if (!isExist)
+                    {
+                        item.IsDelete = true;
+                        await _accessMenuRepository.UpdateAsync(item, cancellationToken);
+                    }
+                    else if (isExist && item.IsDelete == true)
+                    {
+                        item.IsDelete = false;
+                        await _accessMenuRepository.UpdateAsync(item, cancellationToken);
+                    }
+                }
+            }
+            return Json(new { isSuccess = true, message = "اصلاح دسترسی با موفقیت انجام شد." });
+        }
         private string RenderRazorViewToString(string viewName, object model)
         {
             ViewData.Model = model;
