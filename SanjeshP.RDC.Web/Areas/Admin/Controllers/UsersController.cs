@@ -1,24 +1,24 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
-using SanjeshP.RDC.Common.Exceptions;
+using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
-using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
-using SanjeshP.RDC.WebFramework.Api;
+using SanjeshP.RDC.Web.Models.Identity;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -40,6 +40,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IAccessMenuRepository _accessMenuRepository;
         private readonly IEFRepository<UserRole> _eFRepositoryUserRole;
+        private readonly ViewRenderer _viewRenderer;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -52,7 +53,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IView_UserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository
                                 , IAccessMenuRepository accessMenuRepository
-                                , IEFRepository<UserRole> eFRepositoryUserRole)
+                                , IEFRepository<UserRole> eFRepositoryUserRole
+                                , ViewRenderer  viewRenderer)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -64,6 +66,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userTokenRepository = userTokenRepository;
             _accessMenuRepository = accessMenuRepository;
             _eFRepositoryUserRole = eFRepositoryUserRole;
+            _viewRenderer = viewRenderer;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -125,76 +128,96 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public IActionResult CreateUser()
         {
-            var role = _eFRepositoryRole.TableNoTracking.ToList();
-            // Add the placeholder item at the beginning of the list
-            role.Insert(0, new Role
+            var roles = _eFRepositoryRole.TableNoTracking.ToList();
+            var model = new RegisterDto();
+            roles.Insert(0, new Role
             {
                 Id = 0,
-                RoleTitleFa = ". . ."
+                RoleTitleFa = "..."
             });
+            ViewBag.ListofRoles = roles;
 
-            ViewBag.ListofRoles = role;
-            return PartialView("CreateUser");
+            return PartialView("CreateUser", model); // تغییر به PartialView
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
-            if (ModelState.IsValid)
+            var curentUserToken = User.Identity.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
+            if (!ModelState.IsValid)
             {
-                var curentUserToken = User.Identity.FindFirstValue("Token");
-                var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
-
-                registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
-                if (ModelState.IsValid)
+                var role = _eFRepositoryRole.TableNoTracking.ToList();
+                role.Insert(0, new Role
                 {
-                    User user = new User()
-                    {
-                        Id = Guid.NewGuid(),
-                        UserName = registertDto.UserName,
-                        NormalizedUserName = registertDto.UserName.FixTextUpper(),
-                        EmailAddress = registertDto.EmailAddress,
-                        NormalizedEmailAddress = registertDto.EmailAddress.FixTextUpper(),
-                        EmailAddressConfirmed = false,
-                        PasswordHash = PasswordHelper.HashPasswordBCrypt(registertDto.Password),
-                        ConcurrencyStamp = Guid.NewGuid(),
-                        PhoneNumber = registertDto.PhoneNumber,
-                        PhoneNumberConfirmed = false,
-                        TwoFactorEnabled = false,
-                        LockoutEnd = null,
-                        LockoutEnabled = false,
-                        AccessFailedCount = 0,
-                        Creator = token.UserId,
-                        HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
-                    };
+                    Id = 0,
+                    RoleTitleFa = "..."
+                });
+                ViewBag.ListofRoles = role;
+                try
+                {
+                    var validationSummary = string.Join("<br>", ModelState.Values
+                                        .SelectMany(v => v.Errors)
+                                        .Select(e => e.ErrorMessage));
 
-                    var userProfile = _mapper.Map<UserProfile>(registertDto);
-                    userProfile.UserId = user.Id;
-                    userProfile.Creator = user.Creator;
+                    return Json(new { isValid = false, html = validationSummary });
 
-                    UserRole userRole = new UserRole()
-                    {
-                        UserId = user.Id,
-                        RoleId = registertDto.RoleId,
-                        IsActive = true,
-                        IsDelete = false,
-                        CreateDate = DateTime.Now,
-                        Creator = user.Creator,
-                        HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
-                    };
-
-                    await _userRepository.AddAsync(user, cancellationToken, false);
-                    await _userProfilesRepository.AddAsync(userProfile, cancellationToken, false);
-                    await _eFRepositoryUserRole.AddAsync(userRole, cancellationToken, false);
-
-                    await _userRepository.SaveChangesAsync(cancellationToken);
-                    await _userProfilesRepository.SaveChangesAsync(cancellationToken);
-                    await _eFRepositoryUserRole.SaveChangesAsync(cancellationToken);
-
-                    return RedirectToAction(nameof(Index));
                 }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
+               
+               
             }
-            return PartialView("CreateUser", registertDto);
+
+            User user = new User()
+            {
+                Id = Guid.NewGuid(),
+                UserName = registertDto.UserName,
+                NormalizedUserName = registertDto.UserName.FixTextUpper(),
+                EmailAddress = registertDto.EmailAddress,
+                NormalizedEmailAddress = registertDto.EmailAddress.FixTextUpper(),
+                EmailAddressConfirmed = false,
+                PasswordHash = PasswordHelper.HashPasswordBCrypt(registertDto.Password),
+                ConcurrencyStamp = Guid.NewGuid(),
+                PhoneNumber = registertDto.PhoneNumber,
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false,
+                LockoutEnd = null,
+                LockoutEnabled = false,
+                AccessFailedCount = 0,
+                Creator = token.UserId,
+                HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+            };
+
+            var userProfile = _mapper.Map<UserProfile>(registertDto);
+            userProfile.UserId = user.Id;
+            userProfile.Creator = user.Creator;
+
+            UserRole userRole = new UserRole()
+            {
+                UserId = user.Id,
+                RoleId = registertDto.RoleId,
+                IsActive = true,
+                IsDelete = false,
+                CreateDate = DateTime.Now,
+                Creator = user.Creator,
+                HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+            };
+
+            await _userRepository.AddAsync(user, cancellationToken, false);
+            await _userProfilesRepository.AddAsync(userProfile, cancellationToken, false);
+            await _eFRepositoryUserRole.AddAsync(userRole, cancellationToken, false);
+
+            await _userRepository.SaveChangesAsync(cancellationToken);
+            await _userProfilesRepository.SaveChangesAsync(cancellationToken);
+            await _eFRepositoryUserRole.SaveChangesAsync(cancellationToken);
+
+            return Json(new { isValid = true, html = "اطلاعات با موفقیت ثبت شد." });
         }
 
 

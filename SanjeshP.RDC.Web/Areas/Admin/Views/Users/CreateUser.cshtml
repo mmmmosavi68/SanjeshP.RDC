@@ -1,12 +1,18 @@
 ﻿@model SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User.RegisterDto
 
+@{
+    // اطمینان حاصل کنید که ViewBag.ListofRoles مقداردهی شده است
+    var roles = ViewBag.ListofRoles != null ? new SelectList(ViewBag.ListofRoles, "Id", "RoleTitleFa") : new SelectList(new List<SelectListItem>());
+}
+
+
 <div class="row">
     <div class="col-md-12">
         <form id="create-user-form" asp-action="CreateUser" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
             <div class="form-group">
                 <label asp-for="RoleId" class="control-label col-sm-4"></label>
-                <select asp-for="RoleId" class="form-control  col-sm-7 d-inline-block" asp-items="@(new SelectList(ViewBag.ListofRoles,"Id","RoleTitleFa"))"></select>
+                <select asp-for="RoleId" class="form-control col-sm-7 d-inline-block" asp-items="roles"></select>
             </div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label col-sm-4"></label>
@@ -49,19 +55,50 @@
                     <label class="custom-control-label" for="IsActive">
                         @Html.DisplayNameFor(model => model.IsActive)
                     </label>
-                </div>  
+                </div>
             </div>
             @Html.HiddenFor(model => model.UserId)
             <div class="form-group">
-                <input type="submit" value="افزودن کاربر" class="btn btn-success" />
+                <input type="button" id="save-button" value="افزودن کاربر" class="btn btn-success" />
             </div>
         </form>
     </div>
 </div>
-
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }
+<script>
+
+
+    $(document).ready(function() {
+        $('#save-button').click(function() {
+            $.ajax({
+                url: '@Url.Action("CreateUser", "Users")',
+                type: 'POST',
+                data: $('#create-user-form').serialize(),
+                success: function(response) {
+                    if (response.isValid) {
+                        // اگر داده‌ها صحیح بودند، modal را ببندید و صفحه را تازه‌سازی کنید
+                        $('#Modal_AddEdit').modal('hide');
+                         Toast.fire({
+                            icon: 'success',
+                            title:'اطلاعات با موفقیت ثبت شد',
+                        })
+                        
+                    } else {
+                      Toast.fire({
+                            icon: 'error',
+                            title:response.html,
+                        })
+                    }
+                },
+                error: function() {
+                      Toast.fire({
+                            icon: 'error',
+                            title:'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
+                        })
+                }
+            });
+        });
+    });
+</script>
