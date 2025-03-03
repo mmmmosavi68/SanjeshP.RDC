@@ -66,3 +66,32 @@
     z-index: 9999;
     cursor: pointer;
 }
+
+.iziToast-color-red .iziToast-icon {
+    color: #ff0000 !important; /* تغییر رنگ علامت تیک به سبز */
+    animation: spin 1s ease-in-out; /* افزودن افکت چرخش */
+    border: 1px solid #ff0000;
+    border-radius: 50%;
+    padding: 5px;
+    right: -5px;
+    top: 34%
+}
+.iziToast-green .iziToast-icon {
+    color: #5cff00 !important; /* تغییر رنگ علامت تیک به سبز */
+    animation: spin 1s ease-in-out; /* افزودن افکت چرخش */
+    border: 1px solid #4cff00;
+    border-radius: 50%;
+    padding: 5px;
+    right: -5px;
+    top: 34%
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

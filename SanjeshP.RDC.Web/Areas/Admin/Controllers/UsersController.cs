@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.Internal;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
@@ -12,6 +14,7 @@ using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
@@ -42,7 +45,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IMenuRepository _menuRepository;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IAccessMenuRepository _accessMenuRepository;
-        private readonly IEFRepository<UserRole> _eFRepositoryUserRole;
+        private readonly IUserRoleReository _userRoleReository;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -55,7 +58,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IView_UserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository
                                 , IAccessMenuRepository accessMenuRepository
-                                , IEFRepository<UserRole> eFRepositoryUserRole)
+                                , IUserRoleReository userRoleReository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -66,7 +69,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _menuRepository = menuRepository;
             _userTokenRepository = userTokenRepository;
             _accessMenuRepository = accessMenuRepository;
-            _eFRepositoryUserRole = eFRepositoryUserRole;
+            _userRoleReository = userRoleReository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -147,7 +150,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             {
                 return new BadRequestObjectResult(ModelState);
             }
-                var curentUserToken = User.Identity.FindFirstValue("Token");
+            var curentUserToken = User.Identity.FindFirstValue("Token");
             var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
             registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
             if (!ModelState.IsValid)
@@ -173,8 +176,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
                     throw;
                 }
-               
-               
+
+
             }
 
             User user = new User()
@@ -214,11 +217,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             await _userRepository.AddAsync(user, cancellationToken, false);
             await _userProfilesRepository.AddAsync(userProfile, cancellationToken, false);
-            await _eFRepositoryUserRole.AddAsync(userRole, cancellationToken, false);
+            await _userRoleReository.AddAsync(userRole, cancellationToken, false);
 
             await _userRepository.SaveChangesAsync(cancellationToken);
             await _userProfilesRepository.SaveChangesAsync(cancellationToken);
-            await _eFRepositoryUserRole.SaveChangesAsync(cancellationToken);
+            await _userRoleReository.SaveChangesAsync(cancellationToken);
 
             return Ok();
         }
@@ -256,63 +259,119 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return PartialView("EditUser", registerDto);
         }
         [HttpPost]
-        public async Task<IActionResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(registertDto.Password))
+            try
             {
-                ModelState.Remove(nameof(registertDto.Password));
-            }
-            if (ModelState.IsValid)
-            {
-                var user = _userRepository.GetById(registertDto.UserId);
-                var userProfile = _userProfilesRepository.GetByUserIdAsync(registertDto.UserId, cancellationToken);
+                if (string.IsNullOrEmpty(registertDto.Password))
+                {
+                    ModelState.Remove(nameof(registertDto.Password));
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return new BadRequestObjectResult(ModelState);
+                }
+
+                var user = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.Id == registertDto.UserId, cancellationToken);
+                var userProfile = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.UserId == registertDto.UserId, cancellationToken);
+                var userRole = await _userRoleReository.Table.AsNoTracking().FirstOrDefaultAsync(ur => ur.UserId == registertDto.UserId, cancellationToken);
+
+                var curentUserToken = User.Identity.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
 
                 if (user.NormalizedUserName != registertDto.UserName.FixTextUpper())
                 {
-                    var userExist = await _userRepository.GetByUserNameAsync(registertDto.UserName.FixTextUpper(), cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedUserName == registertDto.UserName.FixTextUpper(), cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("UserName", "نام کاربری تکراری است");
-                        var role = _eFRepositoryRole.TableNoTracking;
-                        ViewBag.ListofRoles = role;
-                        return PartialView("EditUser", registertDto);
                     }
                 }
-                else if (user.NormalizedEmailAddress != registertDto.EmailAddress.FixTextUpper())
+                if (user.NormalizedEmailAddress != registertDto.EmailAddress.FixTextUpper())
                 {
-                    var userExist = await _userRepository.GetByEmailAsync(registertDto.EmailAddress.FixTextUpper(), cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedEmailAddress == registertDto.EmailAddress.FixTextUpper(), cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("EmailAddress", "ایمیل تکراری است");
-                        var role = _eFRepositoryRole.TableNoTracking;
-                        ViewBag.ListofRoles = role;
-                        return Json(new { isSuccess = true, html = RenderRazorViewToString("EditUser.cshtml", registertDto) });
-
-                        //return PartialView("EditUser", registerEditDto);
                     }
                 }
-                else if (user.PhoneNumber != registertDto.PhoneNumber.FixTextUpper())
+                if (user.PhoneNumber != registertDto.PhoneNumber)
                 {
-                    var userExist = await _userRepository.GetByPhoneNumberAsync(registertDto.PhoneNumber, cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.PhoneNumber == registertDto.PhoneNumber, cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("PhoneNumber", "شماره همراه تکراری است");
-                        var role = _eFRepositoryRole.TableNoTracking;
-                        ViewBag.ListofRoles = role;
-                        return RedirectToAction("Index", registertDto);
+                    }
+                }
+                if (userProfile.NationalCode != registertDto.NationalCode)
+                {
+                    var userExist = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.NationalCode == registertDto.NationalCode.FixTextUpper(), cancellationToken);
+                    if (userExist != null)
+                    {
+                        ModelState.AddModelError("PhoneNumber", "کدملی تکراری است");
                     }
                 }
 
-                // در صورت موفقیت، کاربر را ویرایش کنید و به صفحه اصلی بازگردید
-                // کد ویرایش کاربر
-                return Json(new { isSuccess = true });
-            }
+                if (!ModelState.IsValid)
+                {
+                    var role = _eFRepositoryRole.TableNoTracking.ToList();
+                    role.Insert(0, new Role
+                    {
+                        Id = 0,
+                        RoleTitleFa = "..."
+                    });
+                    ViewBag.ListofRoles = role;
+                    return new BadRequestObjectResult(ModelState);
+                }
 
-            // در صورت وجود خطا، PartialView را با خطاها بازگردانید
-            var roles = _eFRepositoryRole.TableNoTracking;
-            ViewBag.ListofRoles = roles;
-            return PartialView("EditUser", registertDto);
+                user.UserName = registertDto.UserName;
+                user.NormalizedUserName = registertDto.UserName.FixTextUpper();
+                user.EmailAddress = registertDto.EmailAddress;
+                user.NormalizedEmailAddress = registertDto.EmailAddress.FixTextUpper();
+                user.EmailAddressConfirmed = false;
+                user.ConcurrencyStamp = Guid.NewGuid();
+                user.PhoneNumber = registertDto.PhoneNumber;
+                user.PhoneNumberConfirmed = false;
+                user.TwoFactorEnabled = false;
+                user.LockoutEnd = null;
+                user.LockoutEnabled = false;
+                user.AccessFailedCount = 0;
+                user.Creator = token.UserId;
+                user.IsActive=registertDto.IsActive;
+                user.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                if (!string.IsNullOrEmpty(registertDto.Password))
+                {
+                    user.PasswordHash = PasswordHelper.HashPasswordBCrypt(registertDto.Password);
+                }
+
+                userProfile.FirstName = registertDto.FirstName;
+                userProfile.LastName = registertDto.LastName;
+                userProfile.NationalCode = registertDto.NationalCode;
+                userProfile.IsActive = registertDto.IsActive;
+                userProfile.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+
+                userRole.RoleId = registertDto.RoleId;
+
+                _userRepository.Attach(user);
+                _userProfilesRepository.Attach(userProfile);
+                _userRoleReository.Attach(userRole);
+
+                _userRepository.Update(user);
+                _userProfilesRepository.Update(userProfile);
+                _userRoleReository.Update(userRole);
+
+                await _userRepository.SaveChangesAsync(cancellationToken);
+                await _userProfilesRepository.SaveChangesAsync(cancellationToken);
+                await _userRoleReository.SaveChangesAsync(cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex);
+            }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> DeleteUser(Guid userid, CancellationToken cancellationToken)

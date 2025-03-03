@@ -8,7 +8,7 @@ using SanjeshP.RDC.Common;
 
 namespace SanjeshP.RDC.Data.Contracts
 {
-    public interface IUserRepository : IEFRepository<User>,IScopedDependency
+    public interface IUserRepository : IEFRepository<User>
     {
         public Task<IEnumerable<User>> GetByAllNoTrackingAsync(CancellationToken cancellationToken);
         public Task<IEnumerable<User>> GetByAllAsync(CancellationToken cancellationToken);

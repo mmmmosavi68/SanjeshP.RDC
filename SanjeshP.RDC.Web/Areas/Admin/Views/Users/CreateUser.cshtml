@@ -57,7 +57,7 @@
                     </label>
                 </div>
             </div>
-            @Html.HiddenFor(model => model.UserId)
+            
             <div class="form-group">
                 <input type="button" id="save-button" value="افزودن کاربر" class="btn btn-success" />
             </div>
@@ -69,8 +69,6 @@
 }
 
 <script>
-
-
     $(document).ready(function () {
         $('#save-button').click(function () {
             $.ajax({

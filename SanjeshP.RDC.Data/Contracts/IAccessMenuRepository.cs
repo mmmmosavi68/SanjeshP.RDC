@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace SanjeshP.RDC.Data.Contracts
 {
-    public interface IAccessMenuRepository:IEFRepository<AccessMenus>
+    public interface IAccessMenuRepository : IEFRepository<AccessMenus>
     {
         public Task<List<AccessMenus>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken);
     }
