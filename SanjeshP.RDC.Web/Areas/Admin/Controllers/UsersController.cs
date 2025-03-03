@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Internal;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
+using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
@@ -16,6 +18,7 @@ using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
 using SanjeshP.RDC.Web.Models.Identity;
+using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -40,7 +43,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IAccessMenuRepository _accessMenuRepository;
         private readonly IEFRepository<UserRole> _eFRepositoryUserRole;
-        private readonly ViewRenderer _viewRenderer;
         private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -53,8 +55,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IView_UserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository
                                 , IAccessMenuRepository accessMenuRepository
-                                , IEFRepository<UserRole> eFRepositoryUserRole
-                                , ViewRenderer  viewRenderer)
+                                , IEFRepository<UserRole> eFRepositoryUserRole)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -66,7 +67,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userTokenRepository = userTokenRepository;
             _accessMenuRepository = accessMenuRepository;
             _eFRepositoryUserRole = eFRepositoryUserRole;
-            _viewRenderer = viewRenderer;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -140,11 +140,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return PartialView("CreateUser", model); // تغییر به PartialView
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
-            var curentUserToken = User.Identity.FindFirstValue("Token");
+            if (!ModelState.IsValid)
+            {
+                return new BadRequestObjectResult(ModelState);
+            }
+                var curentUserToken = User.Identity.FindFirstValue("Token");
             var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
             registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
             if (!ModelState.IsValid)
@@ -162,7 +165,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                         .SelectMany(v => v.Errors)
                                         .Select(e => e.ErrorMessage));
 
-                    return Json(new { isValid = false, html = validationSummary });
+                    return new BadRequestObjectResult(ModelState);
 
                 }
                 catch (Exception ex)
@@ -217,7 +220,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             await _userProfilesRepository.SaveChangesAsync(cancellationToken);
             await _eFRepositoryUserRole.SaveChangesAsync(cancellationToken);
 
-            return Json(new { isValid = true, html = "اطلاعات با موفقیت ثبت شد." });
+            return Ok();
         }
 
 

@@ -67,38 +67,40 @@
 @{
     await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }
+
 <script>
 
 
-    $(document).ready(function() {
-        $('#save-button').click(function() {
+    $(document).ready(function () {
+        $('#save-button').click(function () {
             $.ajax({
                 url: '@Url.Action("CreateUser", "Users")',
                 type: 'POST',
                 data: $('#create-user-form').serialize(),
-                success: function(response) {
-                    if (response.isValid) {
-                        // اگر داده‌ها صحیح بودند، modal را ببندید و صفحه را تازه‌سازی کنید
+                success: function (response) {
+                    if (response.isSuccess) {
                         $('#Modal_AddEdit').modal('hide');
-                         Toast.fire({
-                            icon: 'success',
-                            title:'اطلاعات با موفقیت ثبت شد',
-                        })
-                        
+                        iziToast.success({
+                            message: response.message,
+                        });
                     } else {
-                      Toast.fire({
-                            icon: 'error',
-                            title:response.html,
-                        })
+                        var errors = response.message.split(' | ');
+                        errors.forEach((item) => {
+                            iziToast.error({
+                                message: item,
+                            });
+                        });
                     }
                 },
-                error: function() {
-                      Toast.fire({
-                            icon: 'error',
-                            title:'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-                        })
+                error: function () {
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
                 }
             });
         });
     });
+
+
+
 </script>
