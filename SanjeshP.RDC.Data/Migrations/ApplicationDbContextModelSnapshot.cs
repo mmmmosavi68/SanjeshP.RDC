@@ -31,7 +31,7 @@ namespace SanjeshP.RDC.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<Guid>("Creator")
+                    b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("HostIp")
@@ -47,6 +47,8 @@ namespace SanjeshP.RDC.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
 
                     b.ToTable("Groups");
                 });
@@ -691,6 +693,15 @@ namespace SanjeshP.RDC.Data.Migrations
                     b.HasIndex("TokenId");
 
                     b.ToTable("UserVerificationCodes");
+                });
+
+            modelBuilder.Entity("SanjeshP.RDC.Entities.Group.Group", b =>
+                {
+                    b.HasOne("SanjeshP.RDC.Entities.User.User", "Creator")
+                        .WithMany("Groups")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SanjeshP.RDC.Entities.Group.UserGroup", b =>

@@ -35,23 +35,6 @@ namespace SanjeshP.RDC.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Groups",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
-                    UserGroupText = table.Column<string>(nullable: true),
-                    IsActive = table.Column<bool>(nullable: false),
-                    IsDelete = table.Column<bool>(nullable: false),
-                    CreateDate = table.Column<DateTime>(nullable: false, defaultValueSql: "GETDATE()"),
-                    Creator = table.Column<Guid>(nullable: false),
-                    HostIp = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Groups", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Menus",
                 columns: table => new
                 {
@@ -196,30 +179,23 @@ namespace SanjeshP.RDC.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserGroups",
+                name: "Groups",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
-                    UserId = table.Column<Guid>(nullable: true),
-                    GroupId = table.Column<Guid>(nullable: true),
+                    UserGroupText = table.Column<string>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     IsDelete = table.Column<bool>(nullable: false),
                     CreateDate = table.Column<DateTime>(nullable: false, defaultValueSql: "GETDATE()"),
-                    Creator = table.Column<Guid>(nullable: false),
+                    CreatorId = table.Column<Guid>(nullable: false),
                     HostIp = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserGroups", x => x.Id);
+                    table.PrimaryKey("PK_Groups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserGroups_Groups_GroupId",
-                        column: x => x.GroupId,
-                        principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_UserGroups_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Groups_Users_CreatorId",
+                        column: x => x.CreatorId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -339,38 +315,29 @@ namespace SanjeshP.RDC.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccessMenusGroups",
+                name: "UserGroups",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    UserId = table.Column<Guid>(nullable: true),
                     GroupId = table.Column<Guid>(nullable: true),
-                    ListMenuId = table.Column<Guid>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     IsDelete = table.Column<bool>(nullable: false),
                     CreateDate = table.Column<DateTime>(nullable: false, defaultValueSql: "GETDATE()"),
                     Creator = table.Column<Guid>(nullable: false),
-                    HostIp = table.Column<string>(nullable: true),
-                    UserGroupId = table.Column<Guid>(nullable: true),
-                    UserId = table.Column<Guid>(nullable: true)
+                    HostIp = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccessMenusGroups", x => x.Id);
+                    table.PrimaryKey("PK_UserGroups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AccessMenusGroups_Menus_ListMenuId",
-                        column: x => x.ListMenuId,
-                        principalTable: "Menus",
+                        name: "FK_UserGroups_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_AccessMenusGroups_UserGroups_UserGroupId",
-                        column: x => x.UserGroupId,
-                        principalTable: "UserGroups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_AccessMenusGroups_Users_UserId",
+                        name: "FK_UserGroups_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -423,6 +390,45 @@ namespace SanjeshP.RDC.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AccessMenusGroups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    GroupId = table.Column<Guid>(nullable: true),
+                    ListMenuId = table.Column<Guid>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDelete = table.Column<bool>(nullable: false),
+                    CreateDate = table.Column<DateTime>(nullable: false, defaultValueSql: "GETDATE()"),
+                    Creator = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    UserGroupId = table.Column<Guid>(nullable: true),
+                    UserId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccessMenusGroups", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccessMenusGroups_Menus_ListMenuId",
+                        column: x => x.ListMenuId,
+                        principalTable: "Menus",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AccessMenusGroups_UserGroups_UserGroupId",
+                        column: x => x.UserGroupId,
+                        principalTable: "UserGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AccessMenusGroups_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccessMenus_ListMenuId",
                 table: "AccessMenus",
@@ -452,6 +458,11 @@ namespace SanjeshP.RDC.Data.Migrations
                 name: "IX_Codes_ParentId",
                 table: "Codes",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Groups_CreatorId",
+                table: "Groups",
+                column: "CreatorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Menus_ParentId",

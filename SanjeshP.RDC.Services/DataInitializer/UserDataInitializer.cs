@@ -97,7 +97,7 @@ namespace Services.DataInitializer
                 var existMenu = eFGroupRepository.TableNoTracking.Any(p => p.UserGroupText == menu.UserGroupText);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
+                    menu.CreatorId = user.Id;
                     menu.CreateDate = DateTime.Now;
                     eFGroupRepository.Add(menu);
                 }

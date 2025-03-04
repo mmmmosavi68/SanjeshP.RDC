@@ -17,8 +17,9 @@ namespace SanjeshP.RDC.Entities.Group
         public bool IsActive { get; set; }
         public bool IsDelete { get; set; }
         public DateTime CreateDate { get; set; }
-        public Guid Creator { get; set; }
+        public Guid CreatorId { get; set; }
         public string HostIp { get; set; }
         public virtual ICollection<UserGroup> GroupUsers { get; set; } = new List<UserGroup>();
+        public virtual User.User Creator { get; set; }
     }
 }
