@@ -7,46 +7,63 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using System.Threading.Tasks;
+using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Repositories;
+using SanjeshP.RDC.Entities.Menu;
 
 namespace SanjeshP.RDC.WebFramework.UserAuthorization
 {
     public class CustomAuthorizeAttribute : AuthorizeAttribute, IAuthorizationFilter
     {
-        public async void OnAuthorization(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var action_name = context.RouteData.Values["action"].ToString();
-            var controller_name = context.RouteData.Values["controller"].ToString();
+            var action_name = context.RouteData.Values["action"]?.ToString();
+            var controller_name = context.RouteData.Values["controller"]?.ToString();
 
-            //var dd = context.HttpContext.Session.Id;
-            //var URL = context.HttpContext.Request.Host.ToString();
-            //var Host = context.HttpContext.Request.Path.ToString();
-            //string urla = context.ActionDescriptor.DisplayName;
+            var session = context.HttpContext.Session;
+            var host = context.HttpContext.Request.Host.ToString();
+            var path = context.HttpContext.Request.Path.ToString();
+            var displayName = context.ActionDescriptor.DisplayName;
 
-            //var toke = new Guid(context.HttpContext.User.FindFirst("token").Value.ToString());
-            //var haToken = context.HttpContext.RequestServices.GetRequiredService<ITokenRe pository>().GetByIdAsync(toke, context.HttpContext.RequestAborted).Result;
-            //if (haToken == null)
-            //{
-            //    await context.HttpContext.SignOutAsync();
-            //    context.HttpContext.Response.Redirect("~/Login/Login");
-            //}
-            //else if (haToken.IsDelete == true)
-            //{
-            //    await context.HttpContext.SignOutAsync();
-            //    context.HttpContext.Response.Redirect("~/Login/Login");
-            //}
-            //else
-            //{
-            //    var userid = new Guid(context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString());
-            //    List<View_UserMenubar> result = context.HttpContext.RequestServices.GetRequiredService<IView_UserMenubarRepository>().GetUserMenuByUser_Id(userid, context.HttpContext.RequestAborted).Result;
-            //    //var _view_UserMenubar = JsonConvert.DeserializeObject<List<View_UserMenubar>>(context.HttpContext.User.FindFirst("View_UserMenubar").Value.ToString());
-            //    var Check_Permission = result.Any(vum => vum.ControllerName == controller_name
-            //                                                && vum.ActionName == action_name
-            //                                                && vum.Person_Checkecd.Equals(true));
-            //    if (!Check_Permission)
-            //    {
-            //        context.Result = new RedirectResult("~/Login/NoPermission");
-            //    }
-            //}
+            var user = context.HttpContext.User;
+            var tokenClaim = user.FindFirst("token")?.Value;
+            if (Guid.TryParse(tokenClaim, out Guid token))
+            {
+                //var tokenRepository = context.HttpContext.RequestServices.GetRequiredService<ITokenRepository>();
+                //var haToken = tokenRepository.GetByIdAsync(token, context.HttpContext.RequestAborted).Result;
+                //if (haToken == null || haToken.IsDelete)
+                //{
+                //    context.HttpContext.SignOutAsync().GetAwaiter().GetResult();
+                //    context.HttpContext.Response.Redirect("~/Login/Login");
+                //    return;
+                //}
+            }
+            else
+            {
+                context.HttpContext.SignOutAsync().GetAwaiter().GetResult();
+                context.HttpContext.Response.Redirect("~/Login/Login");
+                return;
+            }
+
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                var userMenubarRepository = context.HttpContext.RequestServices.GetRequiredService<IView_UserMenubarRepository>();
+                List<View_UserMenubar> result = userMenubarRepository.GetUserMenuByUser_Id(userId, context.HttpContext.RequestAborted).Result;
+                var checkPermission = result.Any(vum => vum.ControllerName == controller_name
+                                                        && vum.ActionName == action_name
+                                                        && vum.Person_Checkecd);
+                if (!checkPermission)
+                {
+                    context.Result = new RedirectResult("~/Login/NoPermission");
+                }
+            }
+            else
+            {
+                context.HttpContext.SignOutAsync().GetAwaiter().GetResult();
+                context.HttpContext.Response.Redirect("~/Login/Login");
+            }
         }
     }
 }

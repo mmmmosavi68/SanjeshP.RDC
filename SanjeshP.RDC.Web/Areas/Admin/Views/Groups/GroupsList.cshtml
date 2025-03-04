@@ -7,7 +7,7 @@
 <div class="bg-light p-4 rounded ">
     <h3>لیست گروه دسترسی‌ها</h3>
     <div class="row mb-3">
-        <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن گروه دسترسی" />
+        <input type="button" class="btn btn-outline-primary" onclick="CreateGroup()" value="افزودن گروه دسترسی" />
     </div>
 
     <table class="table table-hover text-center " id="tbl_group">
@@ -54,9 +54,9 @@
                         @Html.DisplayFor(modelItem => item.IsActiveTitle)
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.Id')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
-                        <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.Id')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditGroup('@item.Id')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
                         <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteGroup" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="GroupUsers('@item.Id')" title="فهرست کاربران گروه"><i class="fa fa-users"></i></a>
                         <a class="btn btn-sm btn-outline-dark" onclick="AccessMenu('@item.Id')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
                     </td>
                 </tr>
@@ -94,22 +94,22 @@
     </div>
 </div>
 
-    <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
-    <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
-    <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript">
-        // $(function () {
-        //     $('#tbl_group').DataTable({
-        //         "paging": true,
-        //         "searching": true,
-        //         "lengthChange": true,
-        //         "ordering": true,
-        //         "info": true,
-        //         "autoWidth": true,
-        //         "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-        //     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-        // });
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript">
+        $(function () {
+            $('#tbl_group').DataTable({
+                "paging": true,
+                "searching": true,
+                "lengthChange": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": true,
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        });
 
         $('.selectAll').click(function (e) {
             var table = $(e.target).closest('table');
@@ -126,6 +126,51 @@
             btnCancelLabel: 'انصراف',
             btnOkClass: 'btn btn-sm btn-danger',
             btnOkLabel: 'حذف',
-            onConfirm: function () { DeleteUser($(this).attr('id')) }
+            onConfirm: function () { DeleteGroup($(this).attr('id')) }
         });
-    </script>
+
+    function CreateGroup() {
+        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $('#Modal_AddEdit').modal('show');
+        $("#body_Modal_AddEdit").html("");
+        $("#body_Modal_AddEdit").load("/Admin/Groups/CreateGroup");
+    };
+     function EditGroup(userId) {
+        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $('#Modal_AddEdit').modal('show');
+        $("#body_Modal_AddEdit").html("");
+        $("#body_Modal_AddEdit").load("/Admin/Groups/EditGroup?groupId="+userId);
+    };
+
+     function DeleteGroup(GroupID) {
+             $.ajax({
+                    method: "POST",
+                    url: "/Admin/Groups/DeleteGroup?groupid=" + GroupID,
+                       success: function (response) {
+                           if (response.isSuccess) {
+                                $("#tr_" + GroupID).addClass("bg-danger").hide('slow', function() {
+                                  Toast.fire({
+                                        icon: 'success',
+                                        title: response.message,
+                                  })
+
+                                    $("#groupList").load("/Admin/Groups/GroupsList");
+                                //location.reload(); // بارگذاری مجدد صفحه پس از حذف کاربر
+                            });
+                           } else {
+                               var errors = response.message.split(' | ');
+                               errors.forEach((item) => {
+                                   iziToast.error({
+                                       message: response.message,
+                                   });
+                               });
+                           }
+                   },
+                   error: function () {
+                       iziToast.error({
+                           message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                       });
+                   }
+                });
+        };
+</script>

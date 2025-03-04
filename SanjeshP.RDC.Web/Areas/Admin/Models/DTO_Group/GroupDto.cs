@@ -21,7 +21,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
     public class GroupSelectDto : BaseDto<GroupSelectDto, Group, Guid>
     {
         [Required(ErrorMessage = "{0} را وارد نمایید.")]
-        [MaxLength(10, ErrorMessage = "{0} حداکثر 10 کاراکتر میباشد")]
+        [MaxLength(50, ErrorMessage = "{0} حداکثر 50 کاراکتر میباشد")]
         [Display(Name = "نام گروه")]
         public string UserGroupText { get; set; }
         [Display(Name = "ایجاد کننده")]
@@ -29,8 +29,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public Guid? CreatorId { get; set; }
         [Display(Name = "وضعیت" )]
         public IsActiveTitleType IsActiveTitle { get; set; }
-        public bool? IsActive { get; set; }
-        public bool? IsDelete { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDelete { get; set; }
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
         public Guid? CreatorID { get; set; }
