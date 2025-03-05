@@ -131,21 +131,32 @@
 
     function CreateGroup() {
         $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $('#Modal_AddEdit .modal-dialog').removeClass('modal-lg'); // افزودن کلاس سفارشی
         $('#Modal_AddEdit').modal('show');
         $("#body_Modal_AddEdit").html("");
         $("#body_Modal_AddEdit").load("/Admin/Groups/CreateGroup");
     };
      function EditGroup(userId) {
-        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $("#lbl_Modal_AddEdit").html("ویرایش گروه دسترسی ");
+        $('#Modal_AddEdit .modal-dialog').removeClass('modal-lg'); // افزودن کلاس سفارشی
         $('#Modal_AddEdit').modal('show');
         $("#body_Modal_AddEdit").html("");
         $("#body_Modal_AddEdit").load("/Admin/Groups/EditGroup?groupId="+userId);
     };
     function AccessMenusGroup(userId) {
-        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $("#lbl_Modal_AddEdit").html("اصلاح سطح دسترسی گروه ");
+        $('#Modal_AddEdit .modal-dialog').addClass('modal-lg'); // افزودن کلاس سفارشی
         $('#Modal_AddEdit').modal('show');
         $("#body_Modal_AddEdit").html("");
         $("#body_Modal_AddEdit").load("/Admin/Groups/GroupAccessMenu?groupId=" + userId);
+    };
+
+    function GroupUsers(userId) {
+        $("#lbl_Modal_AddEdit").html("فهرست کاربران گروه");
+        $('#Modal_AddEdit .modal-dialog').addClass('modal-lg'); // افزودن کلاس سفارشی
+        $('#Modal_AddEdit').modal('show');
+        $("#body_Modal_AddEdit").html("");
+        $("#body_Modal_AddEdit").load("/Admin/Groups/UsersGroup?groupId=" + userId);
     };
      function DeleteGroup(GroupID) {
              $.ajax({

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
+using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
@@ -49,7 +51,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IMenuRepository menuRepository
                                 , IAccessMenuRepository accessMenuRepository
                                 , IView_UserMenubarRepository view_UserMenubarRepository
-                                , IAccessMenusGroupRepository accessMenusGroupRepository)
+                                , IAccessMenusGroupRepository accessMenusGroupRepository
+                                )
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -175,6 +178,26 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             await _groupsRepository.UpdateAsync(group, cancellationToken);
 
             return Ok();
+        }
+
+        public async Task<IActionResult> UsersGroup(Guid groupId,CancellationToken cancellationToken)
+        {
+            ViewData["groupId"] = groupId;
+            return PartialView("UsersGroup");
+        }
+
+        public async Task<IActionResult> UsersGroupList(Guid groupId, CancellationToken cancellationToken)
+        {
+            //var usersGroup = await _eFRepositoryUserGroup.TableNoTracking.ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
+            //  .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
+            //  .ToListAsync(cancellationToken);
+
+            var usersGroup = await _eFRepositoryUserGroup.TableNoTracking
+                                        .ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
+                                        .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
+                                        .ToListAsync(cancellationToken);
+
+            return PartialView("UsersGroupList", usersGroup);
         }
 
         #region دریافت فهرست منو بر اساس سطح دسترسی کاربر و نمای سطح دسترسی گروه انتخابی

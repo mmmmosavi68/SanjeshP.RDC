@@ -35,27 +35,52 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public virtual Group Group { get; set; }
 
+        //public override void CustomMappings(IMappingExpression<UserGroup, UserGroupSelectDto> mappingExpression)
+        //{
+        //    mappingExpression.ForMember(
+        //       dest => dest.FullName,
+        //       config => config.MapFrom(src => $"{User.UserProfiles.Select(U => U.FirstName).FirstOrDefault()}" + " " + $"{User.UserProfiles.Select(U => U.LastName).FirstOrDefault()}")
+        //       );
+
+        //    mappingExpression.ForMember(
+        //        dest => dest.UserName,
+        //        config => config.MapFrom(src => $"{User.UserName}")
+        //        );
+
+        //    mappingExpression.ForMember(
+        //       dest => dest.NationalCode,
+        //       config => config.MapFrom(src => $"{User.UserProfiles.Select(U => U.NationalCode).FirstOrDefault()}")
+        //       );
+
+        //    mappingExpression.ForMember(
+        //      dest => dest.UserGroupText,
+        //      config => config.MapFrom(src => $"{src.Group.UserGroupText}")
+        //      );
+        //}
+
         public override void CustomMappings(IMappingExpression<UserGroup, UserGroupSelectDto> mappingExpression)
         {
             mappingExpression.ForMember(
-               dest => dest.FullName,
-               config => config.MapFrom(src => $"{User.UserProfiles.Select(U => U.FirstName).FirstOrDefault()}" + " " + $"{User.UserProfiles.Select(U => U.LastName).FirstOrDefault()}")
-               );
+                dest => dest.FullName,
+                config => config.MapFrom(src => src.User.UserProfiles.Any() ? src.User.UserProfiles.FirstOrDefault().FirstName + " " + src.User.UserProfiles.FirstOrDefault().LastName : "")
+            );
 
             mappingExpression.ForMember(
                 dest => dest.UserName,
-                config => config.MapFrom(src => $"{User.UserName}")
-                );
+                config => config.MapFrom(src => src.User.UserName)
+            );
 
             mappingExpression.ForMember(
-               dest => dest.NationalCode,
-               config => config.MapFrom(src => $"{User.UserProfiles.Select(U => U.NationalCode).FirstOrDefault()}")
-               );
+                dest => dest.NationalCode,
+                config => config.MapFrom(src => src.User.UserProfiles.Any() ? src.User.UserProfiles.FirstOrDefault().NationalCode : "")
+            );
 
             mappingExpression.ForMember(
-              dest => dest.UserGroupText,
-              config => config.MapFrom(src => $"{src.Group.UserGroupText}")
-              );
+                dest => dest.UserGroupText,
+                config => config.MapFrom(src => src.Group != null ? src.Group.UserGroupText : "")
+            );
         }
+
+
     }
 }
