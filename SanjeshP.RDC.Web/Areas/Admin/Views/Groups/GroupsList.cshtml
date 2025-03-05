@@ -57,7 +57,7 @@
                         <a class="btn btn-sm btn-outline-warning" onclick="EditGroup('@item.Id')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
                         <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteGroup" title="حذف کاربر"><i class="fa fa-trash"></i></a>
                         <a class="btn btn-sm btn-outline-info" onclick="GroupUsers('@item.Id')" title="فهرست کاربران گروه"><i class="fa fa-users"></i></a>
-                        <a class="btn btn-sm btn-outline-dark" onclick="AccessMenu('@item.Id')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+                        <a class="btn btn-sm btn-outline-dark" onclick="AccessMenusGroup('@item.Id')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
                     </td>
                 </tr>
                 i++;
@@ -141,7 +141,12 @@
         $("#body_Modal_AddEdit").html("");
         $("#body_Modal_AddEdit").load("/Admin/Groups/EditGroup?groupId="+userId);
     };
-
+    function AccessMenusGroup(userId) {
+        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
+        $('#Modal_AddEdit').modal('show');
+        $("#body_Modal_AddEdit").html("");
+        $("#body_Modal_AddEdit").load("/Admin/Groups/GroupAccessMenu?groupId=" + userId);
+    };
      function DeleteGroup(GroupID) {
              $.ajax({
                     method: "POST",

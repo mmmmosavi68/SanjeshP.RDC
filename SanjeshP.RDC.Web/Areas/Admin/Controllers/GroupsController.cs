@@ -3,15 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Data.Contracts.Groups;
+using SanjeshP.RDC.Data.Contracts.Menu;
+using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Group;
+using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
+using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,6 +34,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IEFRepository<UserGroup> _eFRepositoryUserGroup;
+        private readonly IMenuRepository _menuRepository;
+        private readonly IAccessMenuRepository _accessMenuRepository;
+        private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
+        private readonly IAccessMenusGroupRepository _accessMenusGroupRepository;
 
         public GroupsController(IMapper mapper
                                 , ICompositeViewEngine viewEngine
@@ -34,7 +45,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IGroupsRepository groupsRepository
                                 , IUserRepository userRepository
                                 , IUserTokenRepository userTokenRepository
-                                ,IEFRepository<UserGroup> eFRepositoryUserGroup)
+                                , IEFRepository<UserGroup> eFRepositoryUserGroup
+                                , IMenuRepository menuRepository
+                                , IAccessMenuRepository accessMenuRepository
+                                , IView_UserMenubarRepository view_UserMenubarRepository
+                                , IAccessMenusGroupRepository accessMenusGroupRepository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -43,6 +58,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userRepository = userRepository;
             _userTokenRepository = userTokenRepository;
             _eFRepositoryUserGroup = eFRepositoryUserGroup;
+            this._menuRepository = menuRepository;
+            this._accessMenuRepository = accessMenuRepository;
+            this._view_UserMenubarRepository = view_UserMenubarRepository;
+            this._accessMenusGroupRepository = accessMenusGroupRepository;
         }
         public IActionResult Index()
         {
@@ -97,7 +116,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return Ok();
         }
 
-
         public IActionResult EditGroup(Guid groupId)
         {
             var group = _groupsRepository.GetById(groupId);
@@ -136,7 +154,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return Ok();
         }
-      
+
         [HttpPost]
         public async Task<ApiResult> DeleteGroup(Guid groupId, CancellationToken cancellationToken)
         {
@@ -154,11 +172,155 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
 
             group.IsDelete = true;
-            await _groupsRepository.UpdateAsync(group,cancellationToken);
+            await _groupsRepository.UpdateAsync(group, cancellationToken);
 
             return Ok();
         }
 
+        #region دریافت فهرست منو بر اساس سطح دسترسی کاربر و نمای سطح دسترسی گروه انتخابی
+        public IActionResult GroupAccessMenu(Guid groupId)
+        {
+            ViewData["groupId"] = groupId;
+            return PartialView("GroupAccessMenu");
+        }
+        public async Task<ActionResult<string>> GetGroupAccessMenuItem(Guid groupid, CancellationToken cancellationToken)
+        {
+            var curentUserToken = User.Identity.FindFirstValue("Token");
+            UserToken token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
 
+            #region Convert ListMenu to ListMenuUserAccessDto for use jstree
+            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
+            List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
+            foreach (var item in listMenus)
+            {
+                if (item.ParentId == null)
+                {
+                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    {
+                        id = item.Id,
+                        parent = "#",
+                        text = item.Title,
+                    });
+                }
+                else
+                {
+                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    {
+                        id = item.Id,
+                        parent = item.ParentId.ToString(),
+                        text = item.Title,
+                    });
+                }
+            }
+            #endregion
+
+            #region Add Group Access item
+            List<View_UserMenubar> view_GrpoupMenubars = await _view_UserMenubarRepository.GetGroupSelectedAccessMenuByUserCurrentIdAndGroupSelectedID(token.UserId, groupid, cancellationToken);
+            foreach (var item in view_GrpoupMenubars)
+            {
+                foreach (var item2 in listMenuUserAccessDtos)
+                {
+                    if (item.Id.Equals(item2.id))
+                    {
+                        item2.Person_Checkecd = item.Person_Checkecd;
+                        item2.Group_Checkecd = item.Group_Checkecd;
+                    }
+                }
+            }
+            #endregion
+
+            #region Add options jstree
+            foreach (var item in listMenuUserAccessDtos)
+            {
+                if (item.Group_Checkecd == true)
+                {
+                    var result = true;
+                    foreach (var item2 in listMenuUserAccessDtos)
+                    {
+                        if (item2.parent == item.id.ToString())
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+
+                    if (result)
+                    {
+                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
+                        listMenuUserAccessStateDto.selected = true;
+                        listMenuUserAccessStateDto.opened = true;
+                        //listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
+                        item.state = listMenuUserAccessStateDto;
+                    }
+                    else
+                    {
+                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
+                        listMenuUserAccessStateDto.selected = false;
+                        listMenuUserAccessStateDto.opened = false;
+                        //listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
+                        item.state = listMenuUserAccessStateDto;
+                    }
+                }
+            }
+            #endregion
+
+            var json = JsonConvert.SerializeObject(listMenuUserAccessDtos);
+            return (json);
+        }
+        #endregion پایان
+
+        #region افزودن و اصلاح سطح دسترسی گروه انتخابی
+        public async Task<ApiResult> Modify_SelectedNodes_SelectedGroup(string list, Guid groupId, CancellationToken cancellationToken)
+        {
+            List<AccessMenusGroup> userAccessMenusGroup = await _accessMenusGroupRepository.GetAllByGroupIdAsync(groupId, cancellationToken);
+            //Remove all access
+            if (list is null)
+            {
+                foreach (var item in userAccessMenusGroup)
+                {
+                    item.IsDelete = true;
+                    await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
+                }
+            }
+            else
+            {
+                string[] strArray = list.Split(",");
+                foreach (var item in strArray)
+                {
+                    bool isExist = userAccessMenusGroup.Any(ua => ua.ListMenuId.Equals(new Guid(item)));
+                    if (!isExist)
+                    {
+                        AccessMenusGroup NewAccess = new AccessMenusGroup()
+                        {
+                            ListMenuId = new Guid(item),
+                            GroupId = groupId,
+                            Creator = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier)),
+                            IsDelete = false,
+                            IsActive = true,
+                            HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+                        };
+                    await _accessMenusGroupRepository.AddAsync(NewAccess, cancellationToken);
+                    }
+                }
+                foreach (var item in userAccessMenusGroup)
+                {
+                    bool isExist = strArray.Any(ua => ua.Equals(item.ListMenuId.ToString()));
+                    if (!isExist)
+                    {
+                        item.IsDelete = true;
+                        item.IsActive = false;
+                        await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
+                    }
+                    else if (isExist && item.IsDelete == true)
+                    {
+                        item.IsDelete = false;
+                        item.IsActive = true;
+                        await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
+                    }
+                }
+            }
+            return Ok();
+        }
+        #endregion پایان
     }
 }
