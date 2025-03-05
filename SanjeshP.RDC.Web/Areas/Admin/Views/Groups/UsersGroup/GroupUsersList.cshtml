@@ -2,11 +2,12 @@
 @model IEnumerable<UserGroupSelectDto>
 @{
     int i = 1;
+    var groupId = ViewData["groupId"];
 }
 
 <div class="bg-light p-4 rounded ">
     <div class="row mb-3">
-        <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر به گروه" />
+        <input type="button" class="btn btn-outline-primary" id="@groupId" onclick="AddUserGroup(this.id)" value="افزودن کاربر به گروه" />
     </div>
 
     <table class="table table-hover text-center" id="tbl_userGroup">
@@ -29,12 +30,12 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr id="tr_@(item.UserId)">
+                <tr id="tr_@(item.Id)">
                     <th scope="row">@i</th>
                     <th scope="row">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="@item.UserId">
-                            <label class="custom-control-label" for="@item.UserId"></label>
+                            <input type="checkbox" class="custom-control-input" id="@item.Id">
+                            <label class="custom-control-label" for="@item.Id"></label>
                         </div>
                     </th>
                     <td>@Html.DisplayFor(modelItem => item.FullName)</td>
@@ -42,7 +43,7 @@
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
                     <td>@Html.DisplayFor(modelItem => item.UserGroupText)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر">
+                        <a class="btn btn-sm btn-outline-danger" id="@item.Id/@groupId" data-toggle="DeleteUser" title="حذف کاربر">
                             <i class="fa fa-trash"></i>
                         </a>
                     </td>
@@ -51,8 +52,9 @@
             }
         </tbody>
     </table>
-
 </div>
+
+<!-- افزودن مقدار groupId در اسکریپت جاوا اسکریپت -->
 <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
 <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
 <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
@@ -78,13 +80,11 @@
         });
     });
 
-
     function selectAll() {
         var table = $('#tbl_userGroup');
         var isChecked = $('#selectAllUserGroup').prop('checked');
         $('tbody input:checkbox', table).prop('checked', isChecked);
     }
-
 
     $('[data-toggle="DeleteUser"]').confirmation({
         title: 'آیا از حذف مطمئن هستید؟',
@@ -95,41 +95,43 @@
         onConfirm: function () { DeleteUser($(this).attr('id')) }
     });
 
-    // function CreateGroup() {
-    //     $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
-    //     $('#Modal_AddEdit').modal('show');
-    //     $("#body_Modal_AddEdit").html("");
-    //     $("#body_Modal_AddEdit").load("/Admin/Groups/CreateGroup");
-    // };
-    // function DeleteGroup(GroupID) {
-    //     $.ajax({
-    //         method: "POST",
-    //         url: "/Admin/Groups/DeleteGroup?groupid=" + GroupID,
-    //         success: function (response) {
-    //             if (response.isSuccess) {
-    //                 $("#tr_" + GroupID).addClass("bg-danger").hide('slow', function () {
-    //                     Toast.fire({
-    //                         icon: 'success',
-    //                         title: response.message,
-    //                     })
+    function AddUserGroup(groupid) {
+        openModal('افزودن کاربر به گروه', '/Admin/Groups/UsersNotInGroup?groupId=' + groupid, true);
+    }
 
-    //                     $("#groupList").load("/Admin/Groups/GroupsList");
-    //                     //location.reload(); // بارگذاری مجدد صفحه پس از حذف کاربر
-    //                 });
-    //             } else {
-    //                 var errors = response.message.split(' | ');
-    //                 errors.forEach((item) => {
-    //                     iziToast.error({
-    //                         message: response.message,
-    //                     });
-    //                 });
-    //             }
-    //         },
-    //         error: function () {
-    //             iziToast.error({
-    //                 message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
-    //             });
-    //         }
-    //     });
-    // };
+    function DeleteUser(id) {
+            var ids = id.split('/');
+            var usergroupId = ids[0];
+            var groupId = ids[1];
+        $.ajax({
+            method: "POST",
+            url: "/Admin/Groups/DeleteUserGroup?id=" + usergroupId,
+            success: function(response) {
+                if (response.isSuccess) {
+                    $("#tr_" + usergroupId).addClass("bg-danger").hide('slow', function() {
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message,
+                    });
+                    $("#user-group-list").load("/Admin/Groups/GroupUsersList?groupId=" + groupId, function() {
+                        // حذف اسکلتی جدول بعد از بارگذاری
+                        $(".skeleton-table").remove();
+                    });
+                    });
+                } else {
+                    var errors = response.message.split(' | ');
+                    errors.forEach((item) => {
+                        iziToast.error({
+                            message: response.message,
+                        });
+                    });
+                }
+            },
+            error: function() {
+                iziToast.error({
+                    message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                });
+            }
+        });
+    }
 </script>

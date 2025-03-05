@@ -64,7 +64,6 @@
             }
         </tbody>
     </table>
-
     <div id="Modal_AddEdit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Modal_AddEdit" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog  modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -93,7 +92,6 @@
         </div>
     </div>
 </div>
-
 <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
 <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
 <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
@@ -130,34 +128,22 @@
         });
 
     function CreateGroup() {
-        $("#lbl_Modal_AddEdit").html("افزودن گروه دسترسی ");
-        $('#Modal_AddEdit .modal-dialog').removeClass('modal-lg'); // افزودن کلاس سفارشی
-        $('#Modal_AddEdit').modal('show');
-        $("#body_Modal_AddEdit").html("");
-        $("#body_Modal_AddEdit").load("/Admin/Groups/CreateGroup");
+
+          openModal('افزودن گروه دسترسی', '/Admin/Groups/CreateGroup',false);
     };
      function EditGroup(userId) {
-        $("#lbl_Modal_AddEdit").html("ویرایش گروه دسترسی ");
-        $('#Modal_AddEdit .modal-dialog').removeClass('modal-lg'); // افزودن کلاس سفارشی
-        $('#Modal_AddEdit').modal('show');
-        $("#body_Modal_AddEdit").html("");
-        $("#body_Modal_AddEdit").load("/Admin/Groups/EditGroup?groupId="+userId);
+
+           openModal('ویرایش گروه دسترسی ', '/Admin/Groups/EditGroup?groupId=' + userId,false);
     };
     function AccessMenusGroup(userId) {
-        $("#lbl_Modal_AddEdit").html("اصلاح سطح دسترسی گروه ");
-        $('#Modal_AddEdit .modal-dialog').addClass('modal-lg'); // افزودن کلاس سفارشی
-        $('#Modal_AddEdit').modal('show');
-        $("#body_Modal_AddEdit").html("");
-        $("#body_Modal_AddEdit").load("/Admin/Groups/GroupAccessMenu?groupId=" + userId);
+         openModal('اصلاح سطح دسترسی گروه ', '/Admin/Groups/GroupAccessMenu?groupId=' + userId,false);
+
     };
 
     function GroupUsers(userId) {
-        $("#lbl_Modal_AddEdit").html("فهرست کاربران گروه");
-        $('#Modal_AddEdit .modal-dialog').addClass('modal-lg'); // افزودن کلاس سفارشی
-        $('#Modal_AddEdit').modal('show');
-        $("#body_Modal_AddEdit").html("");
-        $("#body_Modal_AddEdit").load("/Admin/Groups/UsersGroup?groupId=" + userId);
+         openModal('فهرست کاربران گروه', '/Admin/Groups/GroupUsersIndex?groupId=' + userId,true);
     };
+
      function DeleteGroup(GroupID) {
              $.ajax({
                     method: "POST",

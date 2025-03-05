@@ -180,24 +180,104 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return Ok();
         }
 
-        public async Task<IActionResult> UsersGroup(Guid groupId,CancellationToken cancellationToken)
+        public async Task<IActionResult> GroupUsersIndex(Guid groupId, CancellationToken cancellationToken)
         {
             ViewData["groupId"] = groupId;
-            return PartialView("UsersGroup");
+            return PartialView("UsersGroup/GroupUsersIndex");
         }
 
-        public async Task<IActionResult> UsersGroupList(Guid groupId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GroupUsersList(Guid groupId, CancellationToken cancellationToken)
         {
-            //var usersGroup = await _eFRepositoryUserGroup.TableNoTracking.ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
-            //  .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
-            //  .ToListAsync(cancellationToken);
-
+            ViewData["groupId"] = groupId;
             var usersGroup = await _eFRepositoryUserGroup.TableNoTracking
                                         .ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
                                         .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
                                         .ToListAsync(cancellationToken);
 
-            return PartialView("UsersGroupList", usersGroup);
+            return PartialView("UsersGroup/GroupUsersList", usersGroup);
+        }
+
+        public async Task<IActionResult> UsersNotInGroup(Guid groupId, CancellationToken cancellationToken)
+        {
+            ViewData["groupId"] = groupId;
+            // گرفتن لیست تمامی کاربران
+            var users = await _userRepository.GetByAllNoTrackingAsync(cancellationToken);
+
+            List<RegisterDto> allUsers = users.Select(user => new RegisterDto
+            {
+                UserId = user.Id,
+                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
+                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
+                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
+                UserName = user.UserName,
+                Password = string.Empty,
+                EmailAddress = user.EmailAddress,
+                PhoneNumber = user.PhoneNumber,
+                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
+                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
+                IsActive = user.IsActive,
+                IsDelete = user.IsDelete
+
+            }).ToList();
+
+            // گرفتن لیست کاربرانی که در گروه انتخابی هستند
+            var usersInGroup = await _eFRepositoryUserGroup.TableNoTracking
+                                       .Where(ug => ug.GroupId.Equals(groupId) && ug.IsActive == true && ug.IsDelete == false)
+                                       .Select(ug => ug.UserId)
+                                       .ToListAsync(cancellationToken);
+            // فیلتر کردن کاربرانی که در گروه انتخابی نیستند
+            var usersNotInGroup = allUsers
+                                    .Where(u => !usersInGroup.Contains(u.UserId))
+                                    .ToList();
+            return PartialView("UsersGroup/UsersNotInGroup", usersNotInGroup);
+        }
+
+        [HttpPost]
+        public async Task<ApiResult> DeleteUserGroup(Guid id, CancellationToken cancellationToken)
+        {
+            var userGroup = await _eFRepositoryUserGroup.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == id, cancellationToken);
+            if (userGroup == null)
+            {
+                ModelState.AddModelError("GroupError", "ردیفی یافت نشد.");
+                return new BadRequestObjectResult(ModelState);
+            }
+
+            userGroup.IsActive = false;
+            userGroup.IsDelete = true;
+            await _eFRepositoryUserGroup.UpdateAsync(userGroup, cancellationToken);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<ApiResult> AddUserGroup(Guid userid,Guid groupid, CancellationToken cancellationToken)
+        {
+            var ExistuserGroup = await _eFRepositoryUserGroup.Table.AsNoTracking()
+                                        .FirstOrDefaultAsync(up => up.GroupId == groupid && up.UserId==userid && up.IsDelete==false && up.IsActive==true, cancellationToken);
+            if (ExistuserGroup != null)
+            {
+                ModelState.AddModelError("GroupError", "کاربر در گروه وجود دارد.");
+                return new BadRequestObjectResult(ModelState);
+            }
+
+            var curentUserToken = User.Identity.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+
+            UserGroup userGroup = new UserGroup()
+            {
+                Id = Guid.NewGuid(),
+                UserId=userid,
+                GroupId=groupid,
+                IsActive = true,
+                IsDelete=false,
+                CreateDate = DateTime.Now,
+                HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                Creator = token.UserId,
+                
+            };
+            await _eFRepositoryUserGroup.AddAsync(userGroup, cancellationToken);
+
+            return Ok();
         }
 
         #region دریافت فهرست منو بر اساس سطح دسترسی کاربر و نمای سطح دسترسی گروه انتخابی
@@ -322,7 +402,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                             IsActive = true,
                             HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
                         };
-                    await _accessMenusGroupRepository.AddAsync(NewAccess, cancellationToken);
+                        await _accessMenusGroupRepository.AddAsync(NewAccess, cancellationToken);
                     }
                 }
                 foreach (var item in userAccessMenusGroup)
