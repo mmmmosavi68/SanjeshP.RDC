@@ -15,6 +15,7 @@ using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Data.Repositories;
+using SanjeshP.RDC.Entities.Common;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
@@ -364,6 +365,31 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 await _userRepository.SaveChangesAsync(cancellationToken);
                 await _userProfilesRepository.SaveChangesAsync(cancellationToken);
                 await _userRoleReository.SaveChangesAsync(cancellationToken);
+
+                // تست ثبت لاگ کاربر
+                //var oldUser = dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == user.Id);
+
+                //// Update user
+                //dbContext.Users.Update(user);
+                //dbContext.SaveChanges();
+
+                //// Create AuditLog entry
+                //var auditLog = new AuditLog
+                //{
+                //    AuditLogId = Guid.NewGuid(),
+                //    EntityId = user.Id,
+                //    TableName = "User",
+                //    OperationType = "Update",
+                //    OperationTime = DateTime.UtcNow,
+                //    UserId = user.CreatorID,
+                //    OldValue = JsonConvert.SerializeObject(oldUser),
+                //    NewValue = JsonConvert.SerializeObject(user),
+                //    Description = "User updated"
+                //};
+                //dbContext.AuditLogs.Add(auditLog);
+                //dbContext.SaveChanges();
+
+
                 return Ok();
             }
             catch (Exception ex)
