@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SanjeshP.RDC.Entities.Common
 {
-    public class AuditLog
+    public class AuditLog : IEntity
     {
         [Key]
         public Guid AuditLogId { get; set; }

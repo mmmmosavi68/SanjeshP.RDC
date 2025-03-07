@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Contracts.Common;
 using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Common;
 using System.Collections.Generic;
@@ -16,10 +16,10 @@ namespace SanjeshP.RDC.WebFramework.Api
         where TSelectDto : BaseDto<TSelectDto, TEntity, TKey>, new()
         where TEntity : BaseEntity<TKey>, new()
     {
-        protected readonly IEFRepository<TEntity> Repository;
+        protected readonly IEntityFrameworkRepository<TEntity> Repository;
         protected readonly IMapper Mapper;
 
-        public CrudController(IEFRepository<TEntity> repository, IMapper mapper)
+        public CrudController(IEntityFrameworkRepository<TEntity> repository, IMapper mapper)
         {
             Repository = repository;
             Mapper = mapper;
@@ -90,7 +90,7 @@ namespace SanjeshP.RDC.WebFramework.Api
         where TSelectDto : BaseDto<TSelectDto, TEntity, int>, new()
         where TEntity : BaseEntity<int>, new()
     {
-        public CrudController(IEFRepository<TEntity> repository, IMapper mapper)
+        public CrudController(IEntityFrameworkRepository<TEntity> repository, IMapper mapper)
             : base(repository, mapper)
         {
         }
@@ -100,7 +100,7 @@ namespace SanjeshP.RDC.WebFramework.Api
         where TDto : BaseDto<TDto, TEntity, int>, new()
         where TEntity : BaseEntity<int>, new()
     {
-        public CrudController(IEFRepository<TEntity> repository, IMapper mapper)
+        public CrudController(IEntityFrameworkRepository<TEntity> repository, IMapper mapper)
             : base(repository, mapper)
         {
         }

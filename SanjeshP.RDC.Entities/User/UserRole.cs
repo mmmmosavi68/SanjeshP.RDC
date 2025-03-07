@@ -1,19 +1,26 @@
 ﻿using SanjeshP.RDC.Entities.Common;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SanjeshP.RDC.Entities.User
 {
-    public class UserRole : BaseEntity
+    public class UserRole : BaseEntity<int>
     {
-       //public int Id { get; set; }
+        [Required(ErrorMessage = "شناسه کاربر الزامی است")]
+        [Display(Name = "شناسه کاربر")]
+        [ForeignKey("User")]
         public Guid? UserId { get; set; }
+
+        [Required(ErrorMessage = "شناسه نقش الزامی است")]
+        [Display(Name = "شناسه نقش")]
+        [ForeignKey("Role")]
         public int? RoleId { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsDelete { get; set; }
-        public DateTime CreateDate { get; set; }
-        public Guid Creator { get; set; }
-        public string HostIp { get; set; }
+
+        [Display(Name = "نقش")]
         public virtual Role Role { get; set; }
+
+        [Display(Name = "کاربر")]
         public virtual User User { get; set; }
     }
 }

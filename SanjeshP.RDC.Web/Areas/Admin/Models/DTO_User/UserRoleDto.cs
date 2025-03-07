@@ -31,11 +31,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 
             mappingExpression.ForMember(
               dest => dest.RoleTitleEn,
-              config => config.MapFrom(src => $"{src.Role.RoleTitleEn}")
+              config => config.MapFrom(src => $"{src.Role.RoleNameFa}")
               );
             mappingExpression.ForMember(
               dest => dest.RoleTitleFa,
-              config => config.MapFrom(src => $"{src.Role.RoleTitleFa}")
+              config => config.MapFrom(src => $"{src.Role.RoleNameFa}")
               );
         }
     }

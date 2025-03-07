@@ -1,8 +1,10 @@
-﻿namespace SanjeshP.RDC.Entities.Common
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SanjeshP.RDC.Entities.Common
 {
-    public interface IEntity
-    {
-    }
+    public interface IEntity { }
 
     public interface IEntity<TKey> : IEntity
     {
@@ -11,14 +13,40 @@
 
     public abstract class BaseEntity<TKey> : IEntity<TKey>
     {
+        [Key]
         public TKey Id { get; set; }
-        //public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // زمان ایجاد
-        //public DateTime? UpdatedAt { get; set; } // زمان بروزرسانی
-        //public bool IsActive { get; set; } = true; // وضعیت فعال بودن
-        //public bool IsDeleted { get; set; } = false; // وضعیت حذف
+
+        [Required(ErrorMessage = "تاریخ ایجاد الزامی است")]
+        [Display(Name = "تاریخ ایجاد")]
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        [Display(Name = "تاریخ به‌روزرسانی")]
+        public DateTime? UpdatedDate { get; set; }
+
+        [Required(ErrorMessage = "وضعیت فعال بودن الزامی است")]
+        [Display(Name = "فعال")]
+        public bool IsActive { get; set; } = true;
+
+        [Required(ErrorMessage = "وضعیت حذف الزامی است")]
+        [Display(Name = "حذف شده")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Required(ErrorMessage = "شناسه سازنده الزامی است")]
+        [Display(Name = "شناسه سازنده")]
+        [ForeignKey("Creator")]
+        public Guid CreatedBy { get; set; }
+
+        [Display(Name = "آی‌پی میزبان")]
+        public string HostIp { get; set; }
     }
 
-    public abstract class BaseEntity : BaseEntity<int>
+    public abstract class BaseEntity : BaseEntity<Guid>
     {
+        public BaseEntity()
+        {
+            Id = Guid.NewGuid();
+        }
     }
+
+    public class IntBaseEntity : BaseEntity<int> { }
 }
