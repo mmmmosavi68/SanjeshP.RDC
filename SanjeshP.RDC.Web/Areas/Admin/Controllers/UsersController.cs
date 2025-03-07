@@ -108,7 +108,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 {
                     return NotFound();
                 }
-                var user = await _userRepository.GetByIdAsync(cancellationToken, userid);
+                var user = await _userRepository.GetByGuidIdAsync(userid, cancellationToken);
                 //var user1 = await _userRepository.GetByGuidIdAsync(userid,cancellationToken);
                 if (user == null)
                 {
@@ -140,6 +140,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
         }
 
+        #region Add User
         public IActionResult CreateUser()
         {
             var roles = _eFRepositoryRole.TableNoTracking.ToList();
@@ -153,7 +154,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return PartialView("CreateUser", model); // تغییر به PartialView
         }
-
         [HttpPost]
         public async Task<ApiResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
         {
@@ -236,15 +236,20 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return Ok();
         }
+        #endregion End Add User
 
-
+        #region Edit User
         public async Task<IActionResult> EditUser(Guid userid, CancellationToken cancellationToken)
         {
             try
             {
-
-
-                var roles = _eFRepositoryRole.TableNoTracking;
+                var roles = _eFRepositoryRole.TableNoTracking.ToList();
+                var model = new RegisterDto();
+                roles.Insert(0, new Role
+                {
+                    Id = 0,
+                    RoleNameFa = "..."
+                });
                 ViewBag.ListofRoles = roles;
 
                 if (userid == null)
@@ -417,7 +422,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 return new BadRequestObjectResult(ex);
             }
         }
-
+        #endregion End Edit User
 
         [HttpPost]
         public async Task<IActionResult> DeleteUser(Guid userid, CancellationToken cancellationToken)
@@ -445,8 +450,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 {
                     return Json(new { isSuccess = false, message = "کاربری یافت نشد." });
                 }
+                user.IsDeleted = true;
 
-                await _userRepository.DeleteAsync(user, cancellationToken);
+                await _userRepository.UpdateAsync(user, cancellationToken);
 
                 return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
             }
@@ -456,6 +462,37 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 throw;
             }
         }
+
+        #region بررسی و صحت سنجی
+        private async Task<RegisterDto> CheckValidation(RegisterDto registerDto, Guid CurentUserID, CancellationToken cancellationToken)
+        {
+            if (registerDto.RoleId == 0)
+            {
+                ModelState.AddModelError("RoleId", "نوع کاربری را انتخاب کنید");
+            }
+            var ExistEamil = await _userRepository.GetUserByEmailAsync(registerDto.EmailAddress.FixTextUpper(), cancellationToken);
+            if (ExistEamil != null)
+            {
+                ModelState.AddModelError("EmailAddress", " Email تکراری است");
+            }
+            var ExistUserName = await _userRepository.GetUserByUserNameAsync(registerDto.UserName.FixTextUpper(), cancellationToken);
+            if (ExistUserName != null)
+            {
+                ModelState.AddModelError("UserName", "نام کاربری تکراری است");
+            }
+            var ExistPhoneNumber = await _userRepository.GetUserByPhoneNumberAsync(registerDto.PhoneNumber.FixTextUpper(), cancellationToken);
+            if (ExistPhoneNumber != null)
+            {
+                ModelState.AddModelError("PhoneNumber", " شماره همراه تکراری است");
+            }
+            var ExistNationalCode = await _userProfilesRepository.GetProfileByNationalCodeAsync(registerDto.NationalCode.FixTextUpper(), cancellationToken);
+            if (ExistNationalCode != null)
+            {
+                ModelState.AddModelError("NationalCode", " کد ملی تکراری است");
+            }
+            return registerDto;
+        }
+        #endregion
 
         #region دریافت فهرست منو بر اساس سطح دسترسی کاربر و نمای سطح دسترسی کاربر انتخابی
         public IActionResult UserAccessMenu(Guid userid)
@@ -612,56 +649,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return Json(new { isSuccess = true, message = "اصلاح دسترسی با موفقیت انجام شد." });
         }
         #endregion پایان
-
-
-        #region بررسی و صحت سنجی
-        private async Task<RegisterDto> CheckValidation(RegisterDto registerDto, Guid CurentUserID, CancellationToken cancellationToken)
-        {
-            if (registerDto.RoleId == 0)
-            {
-                ModelState.AddModelError("RoleId", "نوع کاربری را انتخاب کنید");
-            }
-            var ExistEamil = await _userRepository.GetUserByEmailAsync(registerDto.EmailAddress.FixTextUpper(), cancellationToken);
-            if (ExistEamil != null)
-            {
-                ModelState.AddModelError("EmailAddress", " Email تکراری است");
-            }
-            var ExistUserName = await _userRepository.GetUserByUserNameAsync(registerDto.UserName.FixTextUpper(), cancellationToken);
-            if (ExistUserName != null)
-            {
-                ModelState.AddModelError("UserName", "نام کاربری تکراری است");
-            }
-            var ExistPhoneNumber = await _userRepository.GetUserByPhoneNumberAsync(registerDto.PhoneNumber.FixTextUpper(), cancellationToken);
-            if (ExistPhoneNumber != null)
-            {
-                ModelState.AddModelError("PhoneNumber", " شماره همراه تکراری است");
-            }
-            var ExistNationalCode = await _userProfilesRepository.GetProfileByNationalCodeAsync(registerDto.NationalCode.FixTextUpper(), cancellationToken);
-            if (ExistNationalCode != null)
-            {
-                ModelState.AddModelError("NationalCode", " کد ملی تکراری است");
-            }
-            return registerDto;
-        }
-        #endregion
-        private string RenderRazorViewToString(string viewName, object model)
-        {
-            ViewData.Model = model;
-            using (var sw = new StringWriter())
-            {
-                var viewResult = _viewEngine.GetView("/Areas/Admin/Views/Users/", viewName, false);
-                if (viewResult.View == null)
-                {
-
-                    throw new ArgumentNullException($"View '{viewName}' not found.");
-                }
-
-                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw, new HtmlHelperOptions());
-                viewResult.View.RenderAsync(viewContext);
-                return sw.GetStringBuilder().ToString();
-            }
-        }
-
 
     }
 }

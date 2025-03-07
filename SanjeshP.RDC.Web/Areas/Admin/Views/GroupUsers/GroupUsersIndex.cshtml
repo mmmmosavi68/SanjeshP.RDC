@@ -25,7 +25,7 @@
         $(".skeleton-table").show();
         var groupid = ('@ViewData["groupId"]');
         // این کد PartialView را بارگذاری می‌کند
-        $("#user-group-list").load("/Admin/Groups/GroupUsersList?groupId=" + groupid, function () {
+        $("#user-group-list").load("/Admin/GroupUsers/GroupUsersList?groupId=" + groupid, function () {
             // حذف اسکلتی جدول بعد از بارگذاری
             $(".skeleton-table").remove();
         });

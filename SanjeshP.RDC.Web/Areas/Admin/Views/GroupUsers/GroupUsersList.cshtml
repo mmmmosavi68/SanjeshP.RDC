@@ -1,45 +1,55 @@
-﻿@using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
-@model IEnumerable<RegisterDto>
+﻿@using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers
+@model IEnumerable<GroupUserViewModel>
+@* @using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
+@model IEnumerable<UserGroupSelectDto> *@
+
+
 @{
     int i = 1;
     var groupId = ViewData["groupId"];
 }
 
 <div class="bg-light p-4 rounded ">
-    <table class="table table-hover text-center" id="tbl_usersNotGroup">
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" id="@groupId" onclick="AddUserGroup(this.id)" value="افزودن کاربر به گروه" />
+    </div>
+
+    <table class="table table-hover text-center" id="tbl_userGroup">
         <thead>
             <tr class='trhead'>
                 <th>#</th>
                 <th>
                     <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input selectAll" id="selectAllUserNotGroup" onclick="selectAll()">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAllUserGroup" onclick="selectAll()">
                         <label class="custom-control-label" for="selectAllUserGroup"></label>
                     </div>
                 </th>
-                <th>@Html.DisplayNameFor(model => model.FirstName)</th>
-                <th>@Html.DisplayNameFor(model => model.LastName)</th>
+                <th>@Html.DisplayNameFor(model => model.FullName)</th>
                 <th>@Html.DisplayNameFor(model => model.UserName)</th>
                 <th>@Html.DisplayNameFor(model => model.NationalCode)</th>
+                <th>@Html.DisplayNameFor(model => model.GroupName)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
-                <tr id="tr_@(item.UserId)">
+                <tr id="tr_@(item.Id)">
                     <th scope="row">@i</th>
                     <th scope="row">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="@item.UserId">
-                            <label class="custom-control-label" for="@item.UserId"></label>
+                            <input type="checkbox" class="custom-control-input" id="@item.Id">
+                            <label class="custom-control-label" for="@item.Id"></label>
                         </div>
                     </th>
-                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                     <td>@Html.DisplayFor(modelItem => item.UserName)</td>
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                    <td>@Html.DisplayFor(modelItem => item.GroupName)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-success" id="@item.UserId/@groupId" onclick="AddUserToGroup(this.id)" title="افزودن کاربر به گروه"><i class="fa fa-user-plus"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.Id/@groupId" data-toggle="DeleteUser" title="حذف کاربر">
+                            <i class="fa fa-trash"></i>
+                        </a>
                     </td>
                 </tr>
                 i++;
@@ -48,13 +58,14 @@
     </table>
 </div>
 
+<!-- افزودن مقدار groupId در اسکریپت جاوا اسکریپت -->
 <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
 <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
 <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
 <script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript">
     $(function () {
-        $('#tbl_usersNotGroup').DataTable({
+        $('#tbl_userGroup').DataTable({
             "paging": true,
             "searching": true,
             "lengthChange": true,
@@ -74,30 +85,42 @@
     });
 
     function selectAll() {
-             var table = $('#tbl_usersNotGroup');
+        var table = $('#tbl_userGroup');
         var isChecked = $('#selectAllUserGroup').prop('checked');
         $('tbody input:checkbox', table).prop('checked', isChecked);
     }
 
-        function AddUserToGroup(id) {
-        var ids = id.split('/');
-        var userId = ids[0];
-        var groupId = ids[1];
+    $('[data-toggle="DeleteUser"]').confirmation({
+        title: 'آیا از حذف مطمئن هستید؟',
+        btnCancelClass: 'btn btn-sm btn-primary',
+        btnCancelLabel: 'انصراف',
+        btnOkClass: 'btn btn-sm btn-danger',
+        btnOkLabel: 'حذف',
+        onConfirm: function () { DeleteUser($(this).attr('id')) }
+    });
 
+    function AddUserGroup(groupid) {
+        openModal('افزودن کاربر به گروه', '/Admin/GroupUsers/UsersNotInGroup?groupId=' + groupid, true);
+    }
+
+    function DeleteUser(id) {
+            var ids = id.split('/');
+            var usergroupId = ids[0];
+            var groupId = ids[1];
         $.ajax({
             method: "POST",
-            url: "/Admin/Groups/AddUserGroup?userId=" + userId + "&groupId=" + groupId,
+            url: "/Admin/GroupUsers/DeleteUserGroup?id=" + usergroupId,
             success: function(response) {
                 if (response.isSuccess) {
-                    $("#tr_" + userId).addClass("bg-success").hide('slow', function() {
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.message,
-                        });
-                        $("#user-group-list").load("/Admin/Groups/GroupUsersList?groupId=" + groupId, function() {
-                            // حذف اسکلتی جدول بعد از بارگذاری
-                            $(".skeleton-table").remove();
-                        });
+                    $("#tr_" + usergroupId).addClass("bg-danger").hide('slow', function() {
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message,
+                    });
+                    $("#user-group-list").load("/Admin/GroupUsers/GroupUsersList?groupId=" + groupId, function() {
+                        // حذف اسکلتی جدول بعد از بارگذاری
+                        $(".skeleton-table").remove();
+                    });
                     });
                 } else {
                     var errors = response.message.split(' | ');
@@ -115,5 +138,4 @@
             }
         });
     }
-
 </script>

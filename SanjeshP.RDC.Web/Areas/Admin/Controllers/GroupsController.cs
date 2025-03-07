@@ -89,18 +89,18 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return PartialView("CreateGroup");
         }
 
-        [HttpPost]
-        public async Task<ApiResult> CreateGroup([Bind("UserGroupText,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
+        [HttpPost] 
+        public async Task<ApiResult> CreateGroup([Bind("GroupName,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(groupSelectDto.UserGroupText))
+            if (string.IsNullOrEmpty(groupSelectDto.GroupName))
             {
-                ModelState.AddModelError("UserGroupText", "لطفا نامگروه را وارد کنید.");
+                ModelState.AddModelError("GroupName", "لطفا نامگروه را وارد کنید.");
                 return new BadRequestObjectResult(ModelState);
             }
-            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.UserGroupText.Trim(), cancellationToken);
+            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.GroupName.Trim(), cancellationToken);
             if (existingGroup != null)
             {
-                ModelState.AddModelError("UserGroupText", "نام گروه تکراری است.");
+                ModelState.AddModelError("GroupName", "نام گروه تکراری است.");
                 return new BadRequestObjectResult(ModelState);
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
@@ -109,7 +109,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             Group group = new Group()
             {
                 Id = Guid.NewGuid(),
-                GroupName = groupSelectDto.UserGroupText.Trim(),
+                GroupName = groupSelectDto.GroupName.Trim(),
                 CreatedBy = token.UserId,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
                 IsActive = groupSelectDto.IsActive,
@@ -129,28 +129,28 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResult> EditGroup([Bind("Id,UserGroupText,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> EditGroup([Bind("Id,GroupName,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(groupSelectDto.UserGroupText))
+            if (string.IsNullOrEmpty(groupSelectDto.GroupName))
             {
-                ModelState.AddModelError("UserGroupText", "لطفا نامگروه را وارد کنید.");
+                ModelState.AddModelError("GroupName", "لطفا نامگروه را وارد کنید.");
                 return new BadRequestObjectResult(ModelState);
             }
             var group = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == groupSelectDto.Id, cancellationToken);
 
-            if (group.GroupName != groupSelectDto.UserGroupText.Trim())
+            if (group.GroupName != groupSelectDto.GroupName.Trim())
             {
-                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.UserGroupText.Trim(), cancellationToken);
+                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.GroupName.Trim(), cancellationToken);
                 if (existingGroup != null)
                 {
-                    ModelState.AddModelError("UserGroupText", "نام گروه تکراری است.");
+                    ModelState.AddModelError("GroupName", "نام گروه تکراری است.");
                     return new BadRequestObjectResult(ModelState);
                 }
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
             UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-            group.GroupName = groupSelectDto.UserGroupText.Trim();
+            group.GroupName = groupSelectDto.GroupName.Trim();
             group.CreatedBy = token.UserId;
             group.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             group.IsActive = groupSelectDto.IsActive;
@@ -178,106 +178,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             group.IsDeleted = true;
             await _groupsRepository.UpdateAsync(group, cancellationToken);
-
-            return Ok();
-        }
-
-        public async Task<IActionResult> GroupUsersIndex(Guid groupId, CancellationToken cancellationToken)
-        {
-            ViewData["groupId"] = groupId;
-            return PartialView("UsersGroup/GroupUsersIndex");
-        }
-
-        public async Task<IActionResult> GroupUsersList(Guid groupId, CancellationToken cancellationToken)
-        {
-            ViewData["groupId"] = groupId;
-            var usersGroup = await _eFRepositoryUserGroup.TableNoTracking
-                                        .ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
-                                        .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
-                                        .ToListAsync(cancellationToken);
-
-            return PartialView("UsersGroup/GroupUsersList", usersGroup);
-        }
-
-        public async Task<IActionResult> UsersNotInGroup(Guid groupId, CancellationToken cancellationToken)
-        {
-            ViewData["groupId"] = groupId;
-            // گرفتن لیست تمامی کاربران
-            var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
-
-            List<RegisterDto> allUsers = users.Select(user => new RegisterDto
-            {
-                UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
-                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
-                UserName = user.UserName,
-                Password = string.Empty,
-                EmailAddress = user.EmailAddress,
-                PhoneNumber = user.PhoneNumber,
-                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleNameFa).Last(),
-                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
-                IsActive = user.IsActive,
-                IsDelete = user.IsDeleted
-
-            }).ToList();
-
-            // گرفتن لیست کاربرانی که در گروه انتخابی هستند
-            var usersInGroup = await _eFRepositoryUserGroup.TableNoTracking
-                                       .Where(ug => ug.GroupId.Equals(groupId) && ug.IsActive == true && ug.IsDeleted == false)
-                                       .Select(ug => ug.UserId)
-                                       .ToListAsync(cancellationToken);
-            // فیلتر کردن کاربرانی که در گروه انتخابی نیستند
-            var usersNotInGroup = allUsers
-                                    .Where(u => !usersInGroup.Contains(u.UserId))
-                                    .ToList();
-            return PartialView("UsersGroup/UsersNotInGroup", usersNotInGroup);
-        }
-
-        [HttpPost]
-        public async Task<ApiResult> DeleteUserGroup(Guid id, CancellationToken cancellationToken)
-        {
-            var userGroup = await _eFRepositoryUserGroup.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == id, cancellationToken);
-            if (userGroup == null)
-            {
-                ModelState.AddModelError("GroupError", "ردیفی یافت نشد.");
-                return new BadRequestObjectResult(ModelState);
-            }
-
-            userGroup.IsActive = false;
-            userGroup.IsDeleted = true;
-            await _eFRepositoryUserGroup.UpdateAsync(userGroup, cancellationToken);
-
-            return Ok();
-        }
-
-        [HttpPost]
-        public async Task<ApiResult> AddUserGroup(Guid userid, Guid groupid, CancellationToken cancellationToken)
-        {
-            var ExistuserGroup = await _eFRepositoryUserGroup.Table.AsNoTracking()
-                                        .FirstOrDefaultAsync(up => up.GroupId == groupid && up.UserId == userid && up.IsDeleted == false && up.IsActive == true, cancellationToken);
-            if (ExistuserGroup != null)
-            {
-                ModelState.AddModelError("GroupError", "کاربر در گروه وجود دارد.");
-                return new BadRequestObjectResult(ModelState);
-            }
-
-            var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
-
-            GroupUsers userGroup = new GroupUsers()
-            {
-                Id = Guid.NewGuid(),
-                UserId = userid,
-                GroupId = groupid,
-                IsActive = true,
-                IsDeleted = false,
-                CreatedDate = DateTime.Now,
-                HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                CreatedBy = token.UserId,
-
-            };
-            await _eFRepositoryUserGroup.AddAsync(userGroup, cancellationToken);
 
             return Ok();
         }

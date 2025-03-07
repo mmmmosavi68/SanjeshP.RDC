@@ -21,7 +21,7 @@
                     </div>
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.UserGroupText)
+                    @Html.DisplayNameFor(model => model.GroupName)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.CreatorUserName)
@@ -45,7 +45,7 @@
 
                     </th>
                     <td>
-                        @Html.DisplayFor(modelItem => item.UserGroupText)
+                        @Html.DisplayFor(modelItem => item.GroupName)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.CreatorUserName)
@@ -141,7 +141,7 @@
     };
 
     function GroupUsers(userId) {
-         openModal('فهرست کاربران گروه', '/Admin/Groups/GroupUsersIndex?groupId=' + userId,true);
+         openModal('فهرست کاربران گروه', '/Admin/GroupUsers/GroupUsersIndex?groupId=' + userId,true);
     };
 
      function DeleteGroup(GroupID) {

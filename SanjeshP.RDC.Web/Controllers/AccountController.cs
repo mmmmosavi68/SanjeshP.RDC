@@ -40,8 +40,6 @@ namespace SanjeshP.RDC.Web.Controllers
         {
             return View(new LoginViewModel());
         }
-
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel, CancellationToken cancellationToken)
         {
@@ -133,7 +131,6 @@ namespace SanjeshP.RDC.Web.Controllers
             return Redirect("/Admin/Home");
             return RedirectToAction("Index", "Home"); // هدایت به صفحه اصلی مدیریت
         }
-
         #endregion
 
         #region Register
@@ -142,7 +139,6 @@ namespace SanjeshP.RDC.Web.Controllers
         {
             return View(new RegisterViewModel());
         }
-
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel, CancellationToken cancellationToken)
         {

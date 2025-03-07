@@ -157,11 +157,19 @@ namespace SanjeshP.RDC.Data.Repositories.Users
 
         public async Task<User> GetByGuidIdAsync(Guid id,CancellationToken cancellationToken)
         {
-            var user = await Table
-                    .Include(u => u.UserProfiles)
-                    .FirstOrDefaultAsync(u => u.Id == id);
-                    
-            return user;
+
+
+            return await TableNoTracking.Include(ur => ur.UserRoles)
+               .ThenInclude(r => r.Role)
+               .Include(up => up.UserProfiles)
+               .Where(u => u.IsDeleted == false && u.Id==id)
+               .FirstOrDefaultAsync(cancellationToken)
+               .ConfigureAwait(false);
+
+            //var user = await Table
+            //        .Include(u => u.UserProfiles)
+            //        .FirstOrDefaultAsync(u => u.Id == id);
+            //return user;
         }
     }
 }
