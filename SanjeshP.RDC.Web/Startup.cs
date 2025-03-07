@@ -39,6 +39,11 @@ namespace SanjeshP.RDC.Web
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddCustomAuthentication();
 
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = "localhost:6379"; // آدرس Redis Server
+            //    options.InstanceName = "MyAppCache_";
+            //});
 
             #region Comment
             //services.AddCustomElmah(Configuration, _siteSetting);
@@ -86,7 +91,7 @@ namespace SanjeshP.RDC.Web
                 endpoints.MapControllerRoute(
                     name: "redirect",
                     pattern: "",
-                    defaults: new { controller = "Identity", action = "Login" });
+                    defaults: new { controller = "Account", action = "Login" });
 
                 endpoints.MapAreaControllerRoute(
                     name: "Admin",
@@ -100,7 +105,7 @@ namespace SanjeshP.RDC.Web
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Identity}/{action=Login}/{id?}");
+                    pattern: "{controller=Account}/{action=Login}/{id?}");
             });
 
         }

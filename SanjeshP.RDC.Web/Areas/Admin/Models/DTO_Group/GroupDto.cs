@@ -15,7 +15,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public bool? IsDelete { get; set; }
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
-        public virtual ICollection<UserGroup> GroupUsers { get; set; } = new List<UserGroup>();
+        public virtual ICollection<GroupUsers> GroupUsers { get; set; } = new List<GroupUsers>();
     }
 
     public class GroupSelectDto : BaseDto<GroupSelectDto, Group, Guid>
@@ -38,10 +38,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         // Map the properties accordingly
         public override void CustomMappings(IMappingExpression<Group, GroupSelectDto> mappingExpression)
         {
-            mappingExpression.ForMember(dest => dest.CreatorUserName,
-                                         opt => opt.MapFrom(src => src.Creator.UserName));
-            mappingExpression.ForMember(dest => dest.CreatorId,
-                                         opt => opt.MapFrom(src => src.Creator.Id));
+            //mappingExpression.ForMember(dest => dest.CreatorUserName,
+            //                             opt => opt.MapFrom(src => src.Creator.UserName));
+            //mappingExpression.ForMember(dest => dest.CreatorId,
+            //                             opt => opt.MapFrom(src => src.Creator.Id));
         }
     }
     public enum IsActiveTitleType

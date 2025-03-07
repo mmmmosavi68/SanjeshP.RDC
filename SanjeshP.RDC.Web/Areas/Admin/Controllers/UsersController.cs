@@ -13,7 +13,9 @@ using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
-using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Contracts.Common;
+using SanjeshP.RDC.Data.Contracts.Menus;
+using SanjeshP.RDC.Data.Contracts.Users;
 using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Common;
 using SanjeshP.RDC.Entities.Menu;
@@ -21,7 +23,6 @@ using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
-using SanjeshP.RDC.Web.Models.Identity;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
@@ -41,25 +42,25 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly ICompositeViewEngine _viewEngine;
         private readonly ILogger<UsersController> _logger;
         private readonly IUserRepository _userRepository;
-        private readonly IUserProfilesRepository _userProfilesRepository;
-        private readonly IEFRepository<Role> _eFRepositoryRole;
-        private readonly IMenuRepository _menuRepository;
+        private readonly IUserProfileRepository _userProfilesRepository;
+        private readonly IEntityFrameworkRepository<Role> _eFRepositoryRole;
+        private readonly IMenusRepository _menuRepository;
         private readonly IUserTokenRepository _userTokenRepository;
-        private readonly IAccessMenuRepository _accessMenuRepository;
-        private readonly IUserRoleReository _userRoleReository;
-        private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
+        private readonly IAccessMenusRepository _accessMenuRepository;
+        private readonly IUserRoleRepository _userRoleReository;
+        private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
                                 , ICompositeViewEngine viewEngine
                                 , ILogger<UsersController> logger
                                 , IUserRepository userRepository
-                                , IUserProfilesRepository userProfilesRepository
-                                , IEFRepository<Role> eFRepositoryRole
-                                , IMenuRepository menuRepository
-                                , IView_UserMenubarRepository view_UserMenubarRepository
+                                , IUserProfileRepository userProfilesRepository
+                                , IEntityFrameworkRepository<Role> eFRepositoryRole
+                                , IMenusRepository menuRepository
+                                , IViewUserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository
-                                , IAccessMenuRepository accessMenuRepository
-                                , IUserRoleReository userRoleReository)
+                                , IAccessMenusRepository accessMenuRepository
+                                , IUserRoleRepository userRoleReository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -76,7 +77,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var users = await _userRepository.GetByAllNoTrackingAsync(cancellationToken);
+            var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
             List<RegisterDto> newList = users.Select(user => new RegisterDto
             {
@@ -88,11 +89,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
                 PhoneNumber = user.PhoneNumber,
-                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
+                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleNameFa).Last(),
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
                 IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
-                IsDelete = user.IsDelete
+                IsDelete = user.IsDeleted
 
             }).ToList();
 
@@ -101,33 +102,42 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)
         {
-            if (userid == Guid.Empty)
+            try
             {
-                return NotFound();
-            }
-            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var registerDto = new RegisterDto
-            {
-                UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
-                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
-                UserName = user.UserName,
-                Password = string.Empty,
-                EmailAddress = user.EmailAddress,
-                PhoneNumber = user.PhoneNumber,
-                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
-                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
-                IsActive = user.IsActive,
-                IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
-                IsDelete = user.IsDelete
+                if (userid == Guid.Empty)
+                {
+                    return NotFound();
+                }
+                var user = await _userRepository.GetByIdAsync(cancellationToken, userid);
+                //var user1 = await _userRepository.GetByGuidIdAsync(userid,cancellationToken);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                var registerDto = new RegisterDto
+                {
+                    UserId = user.Id,
+                    FirstName = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.FirstName).FirstOrDefault() : null,
+                    LastName = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.LastName).FirstOrDefault() : null,
+                    NationalCode = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault() : null,
+                    UserTypeTitle = user.UserRoles.Any() ? user.UserRoles.Select(p => p.Role.RoleNameFa).Last() : null,
+                    RoleId = user.UserRoles.Any() ? user.UserRoles.Select(p => p.RoleId).Last() : 0,
+                    UserName = user.UserName,
+                    Password = string.Empty,
+                    EmailAddress = user.EmailAddress,
+                    PhoneNumber = user.PhoneNumber,
+                    IsActive = user.IsActive,
+                    IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
+                    IsDelete = user.IsDeleted
 
-            };
-            return PartialView("DetailUser", registerDto);
+                };
+                return PartialView("DetailUser", registerDto);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public IActionResult CreateUser()
@@ -137,7 +147,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             roles.Insert(0, new Role
             {
                 Id = 0,
-                RoleTitleFa = "..."
+                RoleNameFa = "..."
             });
             ViewBag.ListofRoles = roles;
 
@@ -152,7 +162,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
             registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
             if (!ModelState.IsValid)
             {
@@ -160,7 +170,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 role.Insert(0, new Role
                 {
                     Id = 0,
-                    RoleTitleFa = "..."
+                    RoleNameFa = "..."
                 });
                 ViewBag.ListofRoles = role;
                 try
@@ -197,22 +207,22 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 LockoutEnd = null,
                 LockoutEnabled = false,
                 AccessFailedCount = 0,
-                Creator = token.UserId,
+                CreatedBy = token.UserId,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
             };
 
             var userProfile = _mapper.Map<UserProfile>(registertDto);
             userProfile.UserId = user.Id;
-            userProfile.Creator = user.Creator;
+            userProfile.CreatedBy = user.CreatedBy;
 
             UserRole userRole = new UserRole()
             {
                 UserId = user.Id,
                 RoleId = registertDto.RoleId,
                 IsActive = true,
-                IsDelete = false,
-                CreateDate = DateTime.Now,
-                Creator = user.Creator,
+                IsDeleted = false,
+                CreatedDate = DateTime.Now,
+                CreatedBy = user.CreatedBy,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
             };
 
@@ -230,34 +240,44 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> EditUser(Guid userid, CancellationToken cancellationToken)
         {
-            var roles = _eFRepositoryRole.TableNoTracking;
-            ViewBag.ListofRoles = roles;
-
-            if (userid == null)
+            try
             {
-                return NotFound();
+
+
+                var roles = _eFRepositoryRole.TableNoTracking;
+                ViewBag.ListofRoles = roles;
+
+                if (userid == null)
+                {
+                    return NotFound();
+                }
+                var user = await _userRepository.GetByGuidIdAsync(userid, cancellationToken);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                var registerDto = new RegisterDto
+                {
+
+                    UserId = user.Id,
+                    FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
+                    LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
+                    NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
+                    UserName = user.UserName,
+                    Password = string.Empty,
+                    EmailAddress = user.EmailAddress,
+                    PhoneNumber = user.PhoneNumber,
+                    RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
+                    IsActive = user.IsActive,
+                };
+
+                return PartialView("EditUser", registerDto);
             }
-            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
-            if (user == null)
+            catch (Exception ex)
             {
-                return NotFound();
+
+                throw;
             }
-            var registerDto = new RegisterDto
-            {
-
-                UserId = user.Id,
-                FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
-                LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
-                NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
-                UserName = user.UserName,
-                Password = string.Empty,
-                EmailAddress = user.EmailAddress,
-                PhoneNumber = user.PhoneNumber,
-                RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
-                IsActive = user.IsActive,
-            };
-
-            return PartialView("EditUser", registerDto);
         }
         [HttpPost]
         public async Task<ApiResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
@@ -279,7 +299,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 var userRole = await _userRoleReository.Table.AsNoTracking().FirstOrDefaultAsync(ur => ur.UserId == registertDto.UserId, cancellationToken);
 
                 var curentUserToken = User.Identity.FindFirstValue("Token");
-                var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
                 if (user.NormalizedUserName != registertDto.UserName.FixTextUpper())
                 {
@@ -320,7 +340,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     role.Insert(0, new Role
                     {
                         Id = 0,
-                        RoleTitleFa = "..."
+                        RoleNameFa = "..."
                     });
                     ViewBag.ListofRoles = role;
                     return new BadRequestObjectResult(ModelState);
@@ -338,8 +358,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 user.LockoutEnd = null;
                 user.LockoutEnabled = false;
                 user.AccessFailedCount = 0;
-                user.Creator = token.UserId;
-                user.IsActive=registertDto.IsActive;
+                user.CreatedBy = token.UserId;
+                user.IsActive = registertDto.IsActive;
                 user.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
                 if (!string.IsNullOrEmpty(registertDto.Password))
                 {
@@ -402,29 +422,39 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteUser(Guid userid, CancellationToken cancellationToken)
         {
-            if (userid == null)
+            try
             {
-                return Json(new { isSuccess = false, message = "کاربری جهت حذف ارسال نشده است یا خطایی رخ داده." });
-            }
-            var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
-            if (token != null)
-            {
-                if (userid == token.UserId)
+
+
+                if (userid == null)
                 {
-                    return Json(new { isSuccess = false, message = "امکان حذف کاربری جاری وجود ندارد." });
+                    return Json(new { isSuccess = false, message = "کاربری جهت حذف ارسال نشده است یا خطایی رخ داده." });
                 }
-            }
+                var curentUserToken = User.Identity.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
+                if (token != null)
+                {
+                    if (userid == token.UserId)
+                    {
+                        return Json(new { isSuccess = false, message = "امکان حذف کاربری جاری وجود ندارد." });
+                    }
+                }
 
-            var user = await _userRepository.GetByIdAsync(userid, cancellationToken);
-            if (user == null)
+                var user = await _userRepository.GetByIdAsync(cancellationToken, userid);
+                if (user == null)
+                {
+                    return Json(new { isSuccess = false, message = "کاربری یافت نشد." });
+                }
+
+                await _userRepository.DeleteAsync(user, cancellationToken);
+
+                return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
+            }
+            catch (Exception ex)
             {
-                return Json(new { isSuccess = false, message = "کاربری یافت نشد." });
+
+                throw;
             }
-
-            await _userRepository.DeleteAsync(user, cancellationToken);
-
-            return Json(new { isSuccess = true, message = "کاربر با موفقیت حذف شد." });
         }
 
         #region دریافت فهرست منو بر اساس سطح دسترسی کاربر و نمای سطح دسترسی کاربر انتخابی
@@ -436,7 +466,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         public async Task<ActionResult<string>> GetUserAccessMenuItem(Guid userid, CancellationToken cancellationToken)
         {
             #region Convert ListMenu to ListMenuUserAccessDto for use jstree
-            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
+            List<Menu> listMenus = await _menuRepository.GetAllMenusAsync(cancellationToken);
             List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
             foreach (var item in listMenus)
             {
@@ -446,7 +476,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     {
                         id = item.Id,
                         parent = "#",
-                        text = item.Title,
+                        text = item.MenuTitle,
                     });
                 }
                 else
@@ -455,14 +485,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     {
                         id = item.Id,
                         parent = item.ParentId.ToString(),
-                        text = item.Title,
+                        text = item.MenuTitle,
                     });
                 }
             }
             #endregion
 
             #region Add User Access item
-            List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenu(userid, cancellationToken);
+            List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenus(userid, cancellationToken);
             foreach (var item in view_UserMenubars)
             {
                 foreach (var item2 in listMenuUserAccessDtos)
@@ -537,13 +567,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         #region افزودن و اصلاح سطح دسترسی کاربر انتخابی
         public async Task<IActionResult> Modify_SelectedNodes_SelectedUser(string list, Guid userId, CancellationToken cancellationToken)
         {
-            List<AccessMenus> userAccessMenus = await _accessMenuRepository.GetAllByUserIdAsync(userId, cancellationToken);
+            List<UserAccessMenus> userAccessMenus = await _accessMenuRepository.GetUserAccessMenusByUserIdAsync(userId, cancellationToken);
             //Remove all access
             if (list is null)
             {
                 foreach (var item in userAccessMenus)
                 {
-                    item.IsDelete = true;
+                    item.IsDeleted = true;
                     await _accessMenuRepository.UpdateAsync(item, cancellationToken);
                 }
             }
@@ -552,29 +582,29 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 string[] strArray = list.Split(",");
                 foreach (var item in strArray)
                 {
-                    bool isExist = userAccessMenus.Any(ua => ua.ListMenuId.Equals(new Guid(item)));
+                    bool isExist = userAccessMenus.Any(ua => ua.MenuId.Equals(new Guid(item)));
                     if (!isExist)
                     {
-                        AccessMenus NewAccess = new AccessMenus();
-                        NewAccess.ListMenuId = new Guid(item);
+                        UserAccessMenus NewAccess = new UserAccessMenus();
+                        NewAccess.MenuId = new Guid(item);
                         NewAccess.UserId = userId;
-                        NewAccess.Creator = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier));
-                        NewAccess.IsDelete = false;
+                        NewAccess.CreatedBy = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier));
+                        NewAccess.IsDeleted = false;
                         NewAccess.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
                         await _accessMenuRepository.AddAsync(NewAccess, cancellationToken);
                     }
                 }
                 foreach (var item in userAccessMenus)
                 {
-                    bool isExist = strArray.Any(ua => ua.Equals(item.ListMenuId.ToString()));
+                    bool isExist = strArray.Any(ua => ua.Equals(item.MenuId.ToString()));
                     if (!isExist)
                     {
-                        item.IsDelete = true;
+                        item.IsDeleted = true;
                         await _accessMenuRepository.UpdateAsync(item, cancellationToken);
                     }
-                    else if (isExist && item.IsDelete == true)
+                    else if (isExist && item.IsDeleted == true)
                     {
-                        item.IsDelete = false;
+                        item.IsDeleted = false;
                         await _accessMenuRepository.UpdateAsync(item, cancellationToken);
                     }
                 }
@@ -591,22 +621,22 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             {
                 ModelState.AddModelError("RoleId", "نوع کاربری را انتخاب کنید");
             }
-            var ExistEamil = await _userRepository.GetByEmailAsync(registerDto.EmailAddress.FixTextUpper(), cancellationToken);
+            var ExistEamil = await _userRepository.GetUserByEmailAsync(registerDto.EmailAddress.FixTextUpper(), cancellationToken);
             if (ExistEamil != null)
             {
                 ModelState.AddModelError("EmailAddress", " Email تکراری است");
             }
-            var ExistUserName = await _userRepository.GetByUserNameAsync(registerDto.UserName.FixTextUpper(), cancellationToken);
+            var ExistUserName = await _userRepository.GetUserByUserNameAsync(registerDto.UserName.FixTextUpper(), cancellationToken);
             if (ExistUserName != null)
             {
                 ModelState.AddModelError("UserName", "نام کاربری تکراری است");
             }
-            var ExistPhoneNumber = await _userRepository.GetByPhoneNumberAsync(registerDto.PhoneNumber.FixTextUpper(), cancellationToken);
+            var ExistPhoneNumber = await _userRepository.GetUserByPhoneNumberAsync(registerDto.PhoneNumber.FixTextUpper(), cancellationToken);
             if (ExistPhoneNumber != null)
             {
                 ModelState.AddModelError("PhoneNumber", " شماره همراه تکراری است");
             }
-            var ExistNationalCode = await _userProfilesRepository.GetByCodeMeliAsync(registerDto.NationalCode.FixTextUpper(), cancellationToken);
+            var ExistNationalCode = await _userProfilesRepository.GetProfileByNationalCodeAsync(registerDto.NationalCode.FixTextUpper(), cancellationToken);
             if (ExistNationalCode != null)
             {
                 ModelState.AddModelError("NationalCode", " کد ملی تکراری است");

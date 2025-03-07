@@ -8,19 +8,19 @@ using System.Linq;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
 {
-    public class UserGroupDto : BaseDto<UserGroupDto, UserGroup, Guid>
+    public class UserGroupDto : BaseDto<UserGroupDto, GroupUsers, Guid>
     {
         public Guid? UserId { get; set; }
         public Guid? GroupId { get; set; }
         public bool? IsActive { get; set; }
         public bool? IsDelete { get; set; }
         public DateTime CreateDate { get; set; }
-        public virtual ICollection<AccessMenusGroup> MenusGroupAccesses { get; set; } = new List<AccessMenusGroup>();
+        public virtual ICollection<GroupAccessMenus> MenusGroupAccesses { get; set; } = new List<GroupAccessMenus>();
         public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public virtual Group Group { get; set; }
     }
 
-    public class UserGroupSelectDto : BaseDto<UserGroupSelectDto, UserGroup, Guid>
+    public class UserGroupSelectDto : BaseDto<UserGroupSelectDto, GroupUsers, Guid>
     {
         public string FullName { get; set; }
         public string UserName { get; set; }
@@ -31,7 +31,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         public bool? IsActive { get; set; }
         public bool? IsDelete { get; set; }
         public DateTime CreateDate { get; set; }
-        public virtual ICollection<AccessMenusGroup> MenusGroupAccesses { get; set; } = new List<AccessMenusGroup>();
+        public virtual ICollection<GroupAccessMenus> MenusGroupAccesses { get; set; } = new List<GroupAccessMenus>();
         public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
         public virtual Group Group { get; set; }
 
@@ -58,7 +58,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
         //      );
         //}
 
-        public override void CustomMappings(IMappingExpression<UserGroup, UserGroupSelectDto> mappingExpression)
+        public override void CustomMappings(IMappingExpression<GroupUsers, UserGroupSelectDto> mappingExpression)
         {
             mappingExpression.ForMember(
                 dest => dest.FullName,
@@ -77,7 +77,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group
 
             mappingExpression.ForMember(
                 dest => dest.UserGroupText,
-                config => config.MapFrom(src => src.Group != null ? src.Group.UserGroupText : "")
+                config => config.MapFrom(src => src.Group != null ? src.Group.GroupName : "")
             );
         }
 

@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using SanjeshP.RDC.Entities.User;
-
+using System;
+using SanjeshP.RDC.Entities.Menu;
+using SanjeshP.RDC.Entities.Menu;
 
 namespace SanjeshP.RDC.Data
 {
@@ -18,7 +20,11 @@ namespace SanjeshP.RDC.Data
         {
 
         }
-        DbSet<User> Users { get; set; }
+        //public DbSet<User> Users { get; set; }
+        // سایر DbSetها را در اینجا تعریف کنید
+        // public DbSet<Role> Roles { get; set; }
+        // public DbSet<Menu> Menus { get; set; }
+        // و غیره...
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MyApiDb;Integrated Security=true");

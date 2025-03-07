@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Contracts.Common;
 using SanjeshP.RDC.Entities.Group;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using Services.RDC.DataInitializer;
 using System;
 using System.Collections.Generic;
-using System.Data;  
+using System.Data;
 using System.IO;
 using System.Linq;
 
@@ -14,25 +14,25 @@ namespace Services.DataInitializer
 {
     public class UserDataInitializer : IDataInitializer
     {
-        private readonly IEFRepository<Role> eFRoleRepository;
-        private readonly IEFRepository<User> eFUserRepository;
-        private readonly IEFRepository<UserProfile> eFUserProfileRepository;
-        private readonly IEFRepository<Menu> eFMenuRepository;
-        private readonly IEFRepository<Group> eFGroupRepository;
-        private readonly IEFRepository<UserGroup> eFUserGroupRepository;
-        private readonly IEFRepository<AccessMenusGroup> eFAccessMenusGroupRepository;
-        private readonly IEFRepository<AccessMenus> eFAccessMenusRepository;
-        private readonly IEFRepository<UserRole> eFUserRoleRepository;
+        private readonly IEntityFrameworkRepository<Role> eFRoleRepository;
+        private readonly IEntityFrameworkRepository<User> eFUserRepository;
+        private readonly IEntityFrameworkRepository<UserProfile> eFUserProfileRepository;
+        private readonly IEntityFrameworkRepository<Menu> eFMenuRepository;
+        private readonly IEntityFrameworkRepository<Group> eFGroupRepository;
+        private readonly IEntityFrameworkRepository<GroupUsers> eFUserGroupRepository;
+        private readonly IEntityFrameworkRepository<GroupAccessMenus> eFAccessMenusGroupRepository;
+        private readonly IEntityFrameworkRepository<UserAccessMenus> eFAccessMenusRepository;
+        private readonly IEntityFrameworkRepository<UserRole> eFUserRoleRepository;
 
-        public UserDataInitializer(IEFRepository<Role> eFRoleRepository
-            , IEFRepository<User> eFUserRepository
-            , IEFRepository<UserProfile> eFUserProfileRepository
-            , IEFRepository<Menu> eFMenuRepository
-            , IEFRepository<Group> eFGroupRepository
-            , IEFRepository<UserGroup> eFUserGroupRepository
-            , IEFRepository<AccessMenusGroup> eFAccessMenusGroupRepository
-            , IEFRepository<AccessMenus> eFAccessMenusRepository
-            , IEFRepository<UserRole> eFUserRoleRepository)
+        public UserDataInitializer(IEntityFrameworkRepository<Role> eFRoleRepository
+            , IEntityFrameworkRepository<User> eFUserRepository
+            , IEntityFrameworkRepository<UserProfile> eFUserProfileRepository
+            , IEntityFrameworkRepository<Menu> eFMenuRepository
+            , IEntityFrameworkRepository<Group> eFGroupRepository
+            , IEntityFrameworkRepository<GroupUsers> eFUserGroupRepository
+            , IEntityFrameworkRepository<GroupAccessMenus> eFAccessMenusGroupRepository
+            , IEntityFrameworkRepository<UserAccessMenus> eFAccessMenusRepository
+            , IEntityFrameworkRepository<UserRole> eFUserRoleRepository)
         {
             this.eFRoleRepository = eFRoleRepository;
             this.eFUserRepository = eFUserRepository;
@@ -56,7 +56,7 @@ namespace Services.DataInitializer
                 var existMenu = eFUserRepository.TableNoTracking.Any(p => p.NormalizedUserName == menu.NormalizedUserName);
                 if (!existMenu)
                 {
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedDate = DateTime.Now;
                     menu.ExpireDate = DateTime.Now.AddYears(20);
                     eFUserRepository.Add(menu);
                 }
@@ -71,8 +71,8 @@ namespace Services.DataInitializer
                 var existMenu = eFUserProfileRepository.TableNoTracking.Any(p => p.UserId == menu.UserId);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFUserProfileRepository.Add(menu);
                 }
             }
@@ -84,8 +84,8 @@ namespace Services.DataInitializer
                 var existMenu = eFMenuRepository.TableNoTracking.Any(p => p.Id == menu.Id);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFMenuRepository.Add(menu);
                 }
             }
@@ -94,50 +94,50 @@ namespace Services.DataInitializer
             var jGroup = JsonConvert.DeserializeObject<List<Group>>(jsonGroup);
             foreach (var menu in jGroup)
             {
-                var existMenu = eFGroupRepository.TableNoTracking.Any(p => p.UserGroupText == menu.UserGroupText);
+                var existMenu = eFGroupRepository.TableNoTracking.Any(p => p.GroupName == menu.GroupName);
                 if (!existMenu)
                 {
-                    menu.CreatorId = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFGroupRepository.Add(menu);
                 }
             }
 
             var jsonUserGroup = File.ReadAllText(path + "UserGroup.json");
-            var jUserGroup = JsonConvert.DeserializeObject<List<UserGroup>>(jsonUserGroup);
+            var jUserGroup = JsonConvert.DeserializeObject<List<GroupUsers>>(jsonUserGroup);
             foreach (var menu in jUserGroup)
             {
                 var existMenu = eFUserGroupRepository.TableNoTracking.Any(p => p.Id == menu.Id);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFUserGroupRepository.Add(menu);
                 }
             }
 
             var jsonAccessMenusGroup = File.ReadAllText(path + "AccessMenusGroup.json");
-            var jAccessMenusGroup = JsonConvert.DeserializeObject<List<AccessMenusGroup>>(jsonAccessMenusGroup);
+            var jAccessMenusGroup = JsonConvert.DeserializeObject<List<GroupAccessMenus>>(jsonAccessMenusGroup);
             foreach (var menu in jAccessMenusGroup)
             {
-                var existMenu = eFAccessMenusGroupRepository.TableNoTracking.Any(p => p.GroupId == menu.GroupId && p.ListMenuId == menu.ListMenuId);
+                var existMenu = eFAccessMenusGroupRepository.TableNoTracking.Any(p => p.GroupId == menu.GroupId && p.MenuId == menu.MenuId);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFAccessMenusGroupRepository.Add(menu);
                 }
             }
 
             var jsonAccessMenu = File.ReadAllText(path + "AccessMenus.json");
-            var jAccessMenu = JsonConvert.DeserializeObject<List<AccessMenus>>(jsonAccessMenu);
+            var jAccessMenu = JsonConvert.DeserializeObject<List<UserAccessMenus>>(jsonAccessMenu);
             foreach (var menu in jAccessMenu)
             {
-                var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.ListMenuId == menu.ListMenuId);
+                var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.MenuId == menu.MenuId);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFAccessMenusRepository.Add(menu);
                 }
             }
@@ -146,16 +146,16 @@ namespace Services.DataInitializer
             var jRole = JsonConvert.DeserializeObject<List<Role>>(jsonRole);
             foreach (var menu in jRole)
             {
-                var existMenu = eFRoleRepository.TableNoTracking.Any(p => p.RoleTitleEn == menu.RoleTitleEn && p.RoleTitleFa == menu.RoleTitleFa);
+                var existMenu = eFRoleRepository.TableNoTracking.Any(p => p.RoleNameEn == menu.RoleNameEn && p.RoleNameFa == menu.RoleNameFa);
                 if (!existMenu)
                 {
-                    menu.Creator = user.Id;
-                    menu.CreateDate = DateTime.Now;
+                    menu.CreatedBy = user.Id;
+                    menu.CreatedDate = DateTime.Now;
                     eFRoleRepository.Add(menu);
                 }
             }
 
-            var role = eFRoleRepository.TableNoTracking.Where(p => p.NormalizedRoleTitleEn == "ADMIN").SingleOrDefault();
+            var role = eFRoleRepository.TableNoTracking.Where(p => p.NormalizedRoleNameEn == "ADMIN").SingleOrDefault();
             var existuserRole = eFUserRoleRepository.TableNoTracking.Any(p => p.UserId == user.Id && p.RoleId == role.Id);
             if (!existuserRole)
             {
@@ -164,9 +164,9 @@ namespace Services.DataInitializer
                     UserId = user.Id,
                     RoleId = role.Id,
                     IsActive = true,
-                    IsDelete = false,
-                    CreateDate = DateTime.Now,
-                    Creator = user.Id,
+                    IsDeleted = false,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = user.Id,
                     HostIp = "::1"
                 };
                 eFUserRoleRepository.Add(userRole);

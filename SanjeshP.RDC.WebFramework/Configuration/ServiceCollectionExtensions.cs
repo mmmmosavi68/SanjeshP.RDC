@@ -13,7 +13,6 @@ using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Common.Exceptions;
 using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Data;
-using SanjeshP.RDC.Data.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -24,7 +23,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SanjeshP.RDC.Entities.User;
 using Microsoft.AspNetCore.Http;
-using SanjeshP.RDC.Data.Repositories;
+using SanjeshP.RDC.Data.Contracts.Users;
+using SanjeshP.RDC.Data.Repositories.Users;
 
 namespace WebFramework.Configuration
 {
@@ -42,7 +42,7 @@ namespace WebFramework.Configuration
             });
 
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserProfilesRepository, UserProfileRepository>();
+            services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         }
 
         public static void AddMinimalMvc(this IServiceCollection services)
@@ -195,7 +195,7 @@ namespace WebFramework.Configuration
 
                         //Find user and token from database and perform your custom validation
                         var userId = claimsIdentity.GetUserId();
-                        var user = await userRepository.GetByIdAsync(new Guid(userId), context.HttpContext.RequestAborted);
+                        var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, new Guid(userId));
 
                         //if (user.SecurityStamp != Guid.Parse(securityStamp))
                         //    context.Fail("Token security stamp is not valid.");
@@ -207,7 +207,7 @@ namespace WebFramework.Configuration
                         if (!user.IsActive)
                             context.Fail("User is not active.");
 
-                        await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
+                        await userRepository.UpdateUserLastLoginDateAsync(user, context.HttpContext.RequestAborted);
                     },
                     OnChallenge = context =>
                     {

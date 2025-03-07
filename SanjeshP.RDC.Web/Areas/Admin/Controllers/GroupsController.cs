@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
-using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Contracts.Common;
 using SanjeshP.RDC.Data.Contracts.Groups;
 using SanjeshP.RDC.Data.Contracts.Menu;
+using SanjeshP.RDC.Data.Contracts.Menus;
+using SanjeshP.RDC.Data.Contracts.Users;
 using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Group;
 using SanjeshP.RDC.Entities.Menu;
@@ -32,25 +34,25 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IMapper _mapper;
         private readonly ICompositeViewEngine _viewEngine;
         private readonly ILogger<UsersController> _logger;
-        private readonly IGroupsRepository _groupsRepository;
+        private readonly IGroupRepository _groupsRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserTokenRepository _userTokenRepository;
-        private readonly IEFRepository<UserGroup> _eFRepositoryUserGroup;
-        private readonly IMenuRepository _menuRepository;
-        private readonly IAccessMenuRepository _accessMenuRepository;
-        private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
+        private readonly IEntityFrameworkRepository<GroupUsers> _eFRepositoryUserGroup;
+        private readonly IMenusRepository _menuRepository;
+        private readonly IAccessMenusRepository _accessMenuRepository;
+        private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
         private readonly IAccessMenusGroupRepository _accessMenusGroupRepository;
 
         public GroupsController(IMapper mapper
                                 , ICompositeViewEngine viewEngine
                                 , ILogger<UsersController> logger
-                                , IGroupsRepository groupsRepository
+                                , IGroupRepository groupsRepository
                                 , IUserRepository userRepository
                                 , IUserTokenRepository userTokenRepository
-                                , IEFRepository<UserGroup> eFRepositoryUserGroup
-                                , IMenuRepository menuRepository
-                                , IAccessMenuRepository accessMenuRepository
-                                , IView_UserMenubarRepository view_UserMenubarRepository
+                                , IEntityFrameworkRepository<GroupUsers> eFRepositoryUserGroup
+                                , IMenusRepository menuRepository
+                                , IAccessMenusRepository accessMenuRepository
+                                , IViewUserMenubarRepository view_UserMenubarRepository
                                 , IAccessMenusGroupRepository accessMenusGroupRepository
                                 )
         {
@@ -61,10 +63,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userRepository = userRepository;
             _userTokenRepository = userTokenRepository;
             _eFRepositoryUserGroup = eFRepositoryUserGroup;
-            this._menuRepository = menuRepository;
-            this._accessMenuRepository = accessMenuRepository;
-            this._view_UserMenubarRepository = view_UserMenubarRepository;
-            this._accessMenusGroupRepository = accessMenusGroupRepository;
+            _menuRepository = menuRepository;
+            _accessMenuRepository = accessMenuRepository;
+            _view_UserMenubarRepository = view_UserMenubarRepository;
+            _accessMenusGroupRepository = accessMenusGroupRepository;
         }
         public IActionResult Index()
         {
@@ -75,7 +77,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         public IActionResult GroupsList()
         {
 
-            var groups = _groupsRepository.GetAll();
+            var groups = _groupsRepository.GetAllGroups();
             var groupSelectDtos = _mapper.Map<IEnumerable<GroupSelectDto>>(groups);
             return PartialView("GroupsList", groupSelectDtos);
         }
@@ -95,24 +97,24 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 ModelState.AddModelError("UserGroupText", "لطفا نامگروه را وارد کنید.");
                 return new BadRequestObjectResult(ModelState);
             }
-            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.UserGroupText == groupSelectDto.UserGroupText.Trim(), cancellationToken);
+            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.UserGroupText.Trim(), cancellationToken);
             if (existingGroup != null)
             {
                 ModelState.AddModelError("UserGroupText", "نام گروه تکراری است.");
                 return new BadRequestObjectResult(ModelState);
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
-            UserToken token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), HttpContext.RequestAborted);
 
             Group group = new Group()
             {
                 Id = Guid.NewGuid(),
-                UserGroupText = groupSelectDto.UserGroupText.Trim(),
-                CreatorId = token.UserId,
+                GroupName = groupSelectDto.UserGroupText.Trim(),
+                CreatedBy = token.UserId,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
                 IsActive = groupSelectDto.IsActive,
-                IsDelete = false,
-                CreateDate = DateTime.Now,
+                IsDeleted = false,
+                CreatedDate = DateTime.Now,
             };
             _groupsRepository.Add(group);
 
@@ -136,9 +138,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
             var group = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == groupSelectDto.Id, cancellationToken);
 
-            if (group.UserGroupText != groupSelectDto.UserGroupText.Trim())
+            if (group.GroupName != groupSelectDto.UserGroupText.Trim())
             {
-                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.UserGroupText == groupSelectDto.UserGroupText.Trim(), cancellationToken);
+                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.UserGroupText.Trim(), cancellationToken);
                 if (existingGroup != null)
                 {
                     ModelState.AddModelError("UserGroupText", "نام گروه تکراری است.");
@@ -146,13 +148,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 }
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
-            UserToken token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-            group.UserGroupText = groupSelectDto.UserGroupText.Trim();
-            group.CreatorId = token.UserId;
+            group.GroupName = groupSelectDto.UserGroupText.Trim();
+            group.CreatedBy = token.UserId;
             group.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             group.IsActive = groupSelectDto.IsActive;
-            group.CreateDate = DateTime.Now;
+            group.CreatedDate = DateTime.Now;
             _groupsRepository.Update(group);
 
             return Ok();
@@ -174,7 +176,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
 
-            group.IsDelete = true;
+            group.IsDeleted = true;
             await _groupsRepository.UpdateAsync(group, cancellationToken);
 
             return Ok();
@@ -201,7 +203,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         {
             ViewData["groupId"] = groupId;
             // گرفتن لیست تمامی کاربران
-            var users = await _userRepository.GetByAllNoTrackingAsync(cancellationToken);
+            var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
             List<RegisterDto> allUsers = users.Select(user => new RegisterDto
             {
@@ -213,16 +215,16 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 Password = string.Empty,
                 EmailAddress = user.EmailAddress,
                 PhoneNumber = user.PhoneNumber,
-                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleTitleFa).Last(),
+                UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleNameFa).Last(),
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
-                IsDelete = user.IsDelete
+                IsDelete = user.IsDeleted
 
             }).ToList();
 
             // گرفتن لیست کاربرانی که در گروه انتخابی هستند
             var usersInGroup = await _eFRepositoryUserGroup.TableNoTracking
-                                       .Where(ug => ug.GroupId.Equals(groupId) && ug.IsActive == true && ug.IsDelete == false)
+                                       .Where(ug => ug.GroupId.Equals(groupId) && ug.IsActive == true && ug.IsDeleted == false)
                                        .Select(ug => ug.UserId)
                                        .ToListAsync(cancellationToken);
             // فیلتر کردن کاربرانی که در گروه انتخابی نیستند
@@ -243,17 +245,17 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
 
             userGroup.IsActive = false;
-            userGroup.IsDelete = true;
+            userGroup.IsDeleted = true;
             await _eFRepositoryUserGroup.UpdateAsync(userGroup, cancellationToken);
 
             return Ok();
         }
 
         [HttpPost]
-        public async Task<ApiResult> AddUserGroup(Guid userid,Guid groupid, CancellationToken cancellationToken)
+        public async Task<ApiResult> AddUserGroup(Guid userid, Guid groupid, CancellationToken cancellationToken)
         {
             var ExistuserGroup = await _eFRepositoryUserGroup.Table.AsNoTracking()
-                                        .FirstOrDefaultAsync(up => up.GroupId == groupid && up.UserId==userid && up.IsDelete==false && up.IsActive==true, cancellationToken);
+                                        .FirstOrDefaultAsync(up => up.GroupId == groupid && up.UserId == userid && up.IsDeleted == false && up.IsActive == true, cancellationToken);
             if (ExistuserGroup != null)
             {
                 ModelState.AddModelError("GroupError", "کاربر در گروه وجود دارد.");
@@ -261,19 +263,19 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
 
             var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-            UserGroup userGroup = new UserGroup()
+            GroupUsers userGroup = new GroupUsers()
             {
                 Id = Guid.NewGuid(),
-                UserId=userid,
-                GroupId=groupid,
+                UserId = userid,
+                GroupId = groupid,
                 IsActive = true,
-                IsDelete=false,
-                CreateDate = DateTime.Now,
+                IsDeleted = false,
+                CreatedDate = DateTime.Now,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                Creator = token.UserId,
-                
+                CreatedBy = token.UserId,
+
             };
             await _eFRepositoryUserGroup.AddAsync(userGroup, cancellationToken);
 
@@ -289,10 +291,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         public async Task<ActionResult<string>> GetGroupAccessMenuItem(Guid groupid, CancellationToken cancellationToken)
         {
             var curentUserToken = User.Identity.FindFirstValue("Token");
-            UserToken token = await _userTokenRepository.GetByIdAsync(new Guid(curentUserToken), cancellationToken);
+            UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
             #region Convert ListMenu to ListMenuUserAccessDto for use jstree
-            List<Menu> listMenus = await _menuRepository.GetAllMenu(cancellationToken);
+            List<Menu> listMenus = await _menuRepository.GetAllMenusAsync(cancellationToken);
             List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
             foreach (var item in listMenus)
             {
@@ -302,7 +304,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     {
                         id = item.Id,
                         parent = "#",
-                        text = item.Title,
+                        text = item.MenuTitle,
                     });
                 }
                 else
@@ -311,14 +313,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     {
                         id = item.Id,
                         parent = item.ParentId.ToString(),
-                        text = item.Title,
+                        text = item.MenuTitle,
                     });
                 }
             }
             #endregion
 
             #region Add Group Access item
-            List<View_UserMenubar> view_GrpoupMenubars = await _view_UserMenubarRepository.GetGroupSelectedAccessMenuByUserCurrentIdAndGroupSelectedID(token.UserId, groupid, cancellationToken);
+            List<View_UserMenubar> view_GrpoupMenubars = await _view_UserMenubarRepository.GetGroupSelectedAccessMenusByGroupIdAsync(token.UserId, groupid, cancellationToken);
             foreach (var item in view_GrpoupMenubars)
             {
                 foreach (var item2 in listMenuUserAccessDtos)
@@ -375,13 +377,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         #region افزودن و اصلاح سطح دسترسی گروه انتخابی
         public async Task<ApiResult> Modify_SelectedNodes_SelectedGroup(string list, Guid groupId, CancellationToken cancellationToken)
         {
-            List<AccessMenusGroup> userAccessMenusGroup = await _accessMenusGroupRepository.GetAllByGroupIdAsync(groupId, cancellationToken);
+            List<GroupAccessMenus> userAccessMenusGroup = await _accessMenusGroupRepository.GetGroupAccessMenusByGroupIdAsync(groupId, cancellationToken);
             //Remove all access
             if (list is null)
             {
                 foreach (var item in userAccessMenusGroup)
                 {
-                    item.IsDelete = true;
+                    item.IsDeleted = true;
                     await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
                 }
             }
@@ -390,15 +392,15 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 string[] strArray = list.Split(",");
                 foreach (var item in strArray)
                 {
-                    bool isExist = userAccessMenusGroup.Any(ua => ua.ListMenuId.Equals(new Guid(item)));
+                    bool isExist = userAccessMenusGroup.Any(ua => ua.MenuId.Equals(new Guid(item)));
                     if (!isExist)
                     {
-                        AccessMenusGroup NewAccess = new AccessMenusGroup()
+                        GroupAccessMenus NewAccess = new GroupAccessMenus()
                         {
-                            ListMenuId = new Guid(item),
+                            MenuId = new Guid(item),
                             GroupId = groupId,
-                            Creator = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier)),
-                            IsDelete = false,
+                            CreatedBy = new Guid(User.Identity.FindFirstValue(ClaimTypes.NameIdentifier)),
+                            IsDeleted = false,
                             IsActive = true,
                             HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
                         };
@@ -407,16 +409,16 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 }
                 foreach (var item in userAccessMenusGroup)
                 {
-                    bool isExist = strArray.Any(ua => ua.Equals(item.ListMenuId.ToString()));
+                    bool isExist = strArray.Any(ua => ua.Equals(item.MenuId.ToString()));
                     if (!isExist)
                     {
-                        item.IsDelete = true;
+                        item.IsDeleted = true;
                         item.IsActive = false;
                         await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
                     }
-                    else if (isExist && item.IsDelete == true)
+                    else if (isExist && item.IsDeleted == true)
                     {
-                        item.IsDelete = false;
+                        item.IsDeleted = false;
                         item.IsActive = true;
                         await _accessMenusGroupRepository.UpdateAsync(item, cancellationToken);
                     }

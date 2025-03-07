@@ -6,7 +6,7 @@ using System;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
-    public class AccessMenusGroupDto : BaseDto<AccessMenusGroupDto, AccessMenusGroup, int>
+    public class AccessMenusGroupDto : BaseDto<AccessMenusGroupDto, GroupAccessMenus, int>
     {
         public Guid? GroupId { get; set; }
         public Guid? ListMenuId { get; set; }
@@ -15,10 +15,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
-        public virtual UserGroup UserGroup { get; set; }
+        public virtual GroupUsers UserGroup { get; set; }
     }
 
-    public class AccessMenusGroupSelectDto : BaseDto<AccessMenusGroupSelectDto, AccessMenusGroup, int>
+    public class AccessMenusGroupSelectDto : BaseDto<AccessMenusGroupSelectDto, GroupAccessMenus, int>
     {
         public string GroupTitle { get; set; }
         public string MenuTitle { get; set; }
@@ -29,18 +29,18 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public DateTime? CreateDate { get; set; }
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
-        public virtual UserGroup UserGroup { get; set; }
+        public virtual GroupUsers UserGroup { get; set; }
 
-        public override void CustomMappings(IMappingExpression<AccessMenusGroup, AccessMenusGroupSelectDto> mappingExpression)
+        public override void CustomMappings(IMappingExpression<GroupAccessMenus, AccessMenusGroupSelectDto> mappingExpression)
         {
             mappingExpression.ForMember(
                 dest => dest.GroupTitle,
-                config => config.MapFrom(src => $"{UserGroup.Group.UserGroupText}")
+                config => config.MapFrom(src => $"{UserGroup.Group.GroupName}")
                 );
 
             mappingExpression.ForMember(
                 dest => dest.MenuTitle,
-                config => config.MapFrom(src => $"{ListMenu.Title}")
+                config => config.MapFrom(src => $"{ListMenu.MenuTitle}")
                 );
         }
     }

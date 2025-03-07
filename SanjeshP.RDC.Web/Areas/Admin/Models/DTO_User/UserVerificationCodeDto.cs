@@ -5,7 +5,7 @@ using SanjeshP.RDC.Entities.User;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
 {
-    public class UserVerificationCodeDto : BaseDto<UserVerificationCodeDto, UserVerificationCode, int>
+    public class UserVerificationCodeDto : BaseDto<UserVerificationCodeDto, UserVerificationCode, Guid>
     {
         public Guid? TokenId { get; set; }
         public string VerificationCode { get; set; }
@@ -16,7 +16,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
         public virtual UserTokenDto Token { get; set; }
     }
 
-    public class UserVerificationCodeSelectDto : BaseDto<UserVerificationCodeSelectDto, UserVerificationCode, int>
+    public class UserVerificationCodeSelectDto : BaseDto<UserVerificationCodeSelectDto, UserVerificationCode, Guid>
     {
         public string UserName { get; set; }
         public string SessionId { get; set; }
@@ -32,17 +32,17 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User
         {
             mappingExpression.ForMember(
                 dest => dest.SessionId,
-                config => config.MapFrom(src => $"{src.Token.SessionId}")
+                config => config.MapFrom(src => $"{src.UserToken.SessionId}")
                 );
 
             mappingExpression.ForMember(
               dest => dest.UserAgent,
-              config => config.MapFrom(src => $"{src.Token.UserAgent}")
+              config => config.MapFrom(src => $"{src.UserToken.UserAgent}")
               );
 
             mappingExpression.ForMember(
               dest => dest.UserName,
-              config => config.MapFrom(src => $"{src.Token.User.UserName}")
+              config => config.MapFrom(src => $"{src.UserToken.User.UserName}")
               );
         }
     }

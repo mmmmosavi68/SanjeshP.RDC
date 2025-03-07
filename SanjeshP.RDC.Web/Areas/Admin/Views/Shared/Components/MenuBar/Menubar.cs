@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SanjeshP.RDC.Data.Contracts;
+using SanjeshP.RDC.Data.Contracts.Menus;
+using SanjeshP.RDC.Data.Contracts.Users;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
     {
         private readonly IUserTokenRepository _userTokenRepository;
 
-        public readonly IView_UserMenubarRepository _view_UserMenubarRepository;
+        public readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
-        public MenuBarViewComponent(IView_UserMenubarRepository view_UserMenubarRepository,IUserTokenRepository userTokenRepository)
+        public MenuBarViewComponent(IViewUserMenubarRepository view_UserMenubarRepository, IUserTokenRepository userTokenRepository)
         {
             _view_UserMenubarRepository = view_UserMenubarRepository;
             _userTokenRepository = userTokenRepository;
@@ -23,8 +24,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var token = new Guid(HttpContext.User.FindFirst("Token").Value.ToString());
-            var userToken = await _userTokenRepository.GetByIdAsync(token, HttpContext.RequestAborted);
-            var CurentView_UserMenubar = _view_UserMenubarRepository.GetUserAccessMenu(userToken.UserId, HttpContext.RequestAborted);
+            var userToken = await _userTokenRepository.GetUserTokenByIdAsync(token,HttpContext.RequestAborted);
+            var CurentView_UserMenubar = _view_UserMenubarRepository.GetUserAccessMenus(userToken.UserId, HttpContext.RequestAborted);
             if (CurentView_UserMenubar == null)
             {
                 // Handle the case where _view_UserMenubar is null
@@ -45,7 +46,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
                         PageCode = item.PageCode,
                         ParentId = item.ParentId,
                         ShowMenu = item.ShowMenu,
-                        Title = item.Title,
+                        Title = item.MenuTitle,
                         IsDelete = item.Person_Checkecd,
                         Area = item.Area,
                         ActionName = item.ActionName,
@@ -55,7 +56,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
                 }
             }
 
-            return View( FinalList);
+            return View(FinalList);
         }
         private List<MenuDto> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
         {
@@ -73,7 +74,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
                         PageCode = item.PageCode,
                         ParentId = item.ParentId,
                         ShowMenu = item.ShowMenu,
-                        Title = item.Title,
+                        Title = item.MenuTitle,
                         Area = item.Area,
                         ActionName = item.ActionName,
                         ControllerName = item.ControllerName,

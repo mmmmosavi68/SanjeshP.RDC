@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using SanjeshP.RDC.Web.Models.Identity;
-using SanjeshP.RDC.Data.Contracts;
 using System.Linq;
 using AutoMapper;
 using SanjeshP.RDC.Security;
@@ -18,6 +17,9 @@ using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Common.Exceptions;
 using Microsoft.Extensions.Logging;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
+using SanjeshP.RDC.Data.Contracts.Common;
+using SanjeshP.RDC.Data.Contracts.Users;
+using SanjeshP.RDC.Data.Contracts.Menus;
 
 namespace SanjeshP.RDC.Web.Controllers
 {
@@ -28,17 +30,17 @@ namespace SanjeshP.RDC.Web.Controllers
         private readonly ILogger<IdentityController> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IUserTokenRepository _userTokenRepository;
-        private readonly IView_UserMenubarRepository _view_UserMenubarRepository;
-        private readonly IEFRepository<UserRole> _eFUserRoleRepository;
-        private readonly IEFRepository<UserProfile> _userProfilesRepository;
+        private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
+        private readonly IEntityFrameworkRepository<UserRole> _eFUserRoleRepository;
+        private readonly IEntityFrameworkRepository<UserProfile> _userProfilesRepository;
 
         public IdentityController(IMapper mapper
                                  , ILogger<IdentityController> logger
                                  , IUserRepository userRepository
                                  , IUserTokenRepository userTokenRepository
-                                 , IView_UserMenubarRepository view_UserMenubarRepository
-                                 , IEFRepository<UserRole> eFUserRoleRepository
-                                 , IEFRepository<UserProfile> userProfilesRepository)
+                                 , IViewUserMenubarRepository view_UserMenubarRepository
+                                 , IEntityFrameworkRepository<UserRole> eFUserRoleRepository
+                                 , IEntityFrameworkRepository<UserProfile> userProfilesRepository)
         {
             _mapper = mapper;
             _logger = logger;
@@ -60,7 +62,7 @@ namespace SanjeshP.RDC.Web.Controllers
             {
                 //string PasswordHash = PasswordHelper.HashPasswordBCrypt(loginDTO.Password);
                 //User users = await _userRepository.GetByUserNameAndPasswordAsync(loginDTO.UserName, PasswordHash, cancellationToken);
-                User user = await _userRepository.GetByUserNameAsync(loginDTO.UserName, cancellationToken);
+                User user = await _userRepository.GetUserByUserNameAsync(loginDTO.UserName, cancellationToken);
 
                 if (user == null)
                 {
@@ -74,7 +76,7 @@ namespace SanjeshP.RDC.Web.Controllers
                     _logger.LogInformation("Login failed:" + user.UserName + " Password verification failed.");
                     return View(loginDTO);
                 }
-                else if (user.IsDelete)
+                else if (user.IsDeleted)
                 {
                     ModelState.AddModelError("UserName", "کاربری با چنین مشخصاتی یافت نشد");
                     _logger.LogInformation("Login failed: " + user.UserName + " Deleted");
@@ -114,13 +116,13 @@ namespace SanjeshP.RDC.Web.Controllers
                         UserId = user.Id,
                         SessionId = HttpContext.Session.Id,
                         UserAgent = Request.Headers["User-Agent"].ToString(),
-                        IsDelete = false,
-                        CreateDate = DateTime.Now,
+                        IsDeleted = false,
+                        CreatedDate = DateTime.Now,
                         ExpirationDate = DateTime.Now.AddMinutes(30),
-                        CreateHostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+                        HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
                     };
 
-                    await _userTokenRepository.AddTokenAsync(token, cancellationToken);
+                    await _userTokenRepository.AddUserTokenAsync(token, cancellationToken);
                     //var userTokens = await _userTokenRepository.GetByUserIdAsync(user.Id, cancellationToken);
                     //var CurentView_UserMenubar = _view_UserMenubarRepository.GetUserAccessMenu(user.Id, cancellationToken);
                     //string CurentView_UserMenubar_Json = JsonConvert.SerializeObject(CurentView_UserMenubar);
@@ -130,8 +132,8 @@ namespace SanjeshP.RDC.Web.Controllers
                         {
                             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                             new Claim(ClaimTypes.Name, user.UserProfiles.Any() ? user.UserProfiles.First().FirstName + " " + user.UserProfiles.First().LastName : "No Profile"),
-                            new Claim("RoleID", user.UserRoles.Any() ? user.UserRoles.Last().Role.NormalizedRoleTitleEn : "No Role"),
-                            new Claim("RoleTitle_Fa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleTitleFa : "No Role"),
+                            new Claim("RoleID", user.UserRoles.Any() ? user.UserRoles.Last().Role.NormalizedRoleNameEn : "No Role"),
+                            new Claim("RoleNameFa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleNameFa : "No Role"),
                             new Claim("Token", user.UserRoles.Any() ? token.Id.ToString() : "No Role"),
 
                             //new Claim("View_UserMenubar", CurentView_UserMenubar_Json),
@@ -178,7 +180,7 @@ namespace SanjeshP.RDC.Web.Controllers
                 user.PasswordHash = PasswordHelper.HashPasswordBCrypt(registerDto.NationalCode);
                 user.TwoFactorEnabled = false;
                 user.PhoneNumberConfirmed = false;
-                user.Creator = userId;
+                user.CreatedBy = userId;
                 user.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
                 await _userRepository.AddAsync(user, cancellationToken);
                 #endregion
@@ -189,9 +191,9 @@ namespace SanjeshP.RDC.Web.Controllers
                     UserId = user.Id,
                     RoleId = 1,
                     IsActive = true,
-                    IsDelete = false,
-                    CreateDate = DateTime.Now,
-                    Creator = user.Id,
+                    IsDeleted = false,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = user.Id,
                     HostIp = "::1"
                 };
                 _eFUserRoleRepository.Add(userRole);
@@ -205,9 +207,9 @@ namespace SanjeshP.RDC.Web.Controllers
                     LastName = registerDto.LastName,
                     NationalCode = registerDto.NationalCode,
                     IsActive = true,
-                    IsDelete = false,
-                    CreateDate = DateTime.Now,
-                    Creator = user.Id,
+                    IsDeleted = false,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = user.Id,
                     HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
                 };
                 await _userProfilesRepository.AddAsync(userProfiles, cancellationToken);
@@ -266,7 +268,7 @@ namespace SanjeshP.RDC.Web.Controllers
             }
 
             var tokenId = userToken.UserId;
-            List<View_UserMenubar> result1 = await _view_UserMenubarRepository.GetUserSelectedAccessMenuByUserCurrentIdAndUSerSelectedID(user.Id, userToken.UserId, cancellationToken);
+            List<View_UserMenubar> result1 = await _view_UserMenubarRepository.GetUserSelectedAccessMenusByUserIdAsync(user.Id, userToken.UserId, cancellationToken);
             List<MenuSelectTreeJsDto> FinalList = new List<MenuSelectTreeJsDto>();
             foreach (var item in result1)
             {
@@ -283,7 +285,7 @@ namespace SanjeshP.RDC.Web.Controllers
                         {
 
                             key = item.Id.ToString(),
-                            title = item.Title,
+                            title = item.MenuTitle,
                             //disabled = dis,
                             disableCheckbox = dis,
                             children = GetChildMenu(item.Id, result1),
@@ -326,7 +328,7 @@ namespace SanjeshP.RDC.Web.Controllers
                         {
 
                             key = item.Id.ToString(),
-                            title = item.Title,
+                            title = item.MenuTitle,
                             //disabled = dis,
                             disableCheckbox = dis,
                             children = GetChildMenu(item.Id, _List)

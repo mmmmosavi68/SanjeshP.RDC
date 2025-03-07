@@ -17,9 +17,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\SanjeshP.RDC.Entities\SanjeshP.RDC.Entities.csproj" />
+    <ProjectReference Include="..\SanjeshP.RDC.DTO\SanjeshP.RDC.DTO.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,9 +8,9 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using System.Threading.Tasks;
-using SanjeshP.RDC.Data.Contracts;
 using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Menu;
+using SanjeshP.RDC.Data.Contracts.Menus;
 
 namespace SanjeshP.RDC.WebFramework.UserAuthorization
 {
@@ -49,8 +49,8 @@ namespace SanjeshP.RDC.WebFramework.UserAuthorization
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (Guid.TryParse(userIdClaim, out Guid userId))
             {
-                var userMenubarRepository = context.HttpContext.RequestServices.GetRequiredService<IView_UserMenubarRepository>();
-                List<View_UserMenubar> result = userMenubarRepository.GetUserMenuByUser_Id(userId, context.HttpContext.RequestAborted).Result;
+                var userMenubarRepository = context.HttpContext.RequestServices.GetRequiredService<IViewUserMenubarRepository>();
+                List<View_UserMenubar> result = userMenubarRepository.GetUserMenusByUserIdAsync(userId, context.HttpContext.RequestAborted).Result;
                 var checkPermission = result.Any(vum => vum.ControllerName == controller_name
                                                         && vum.ActionName == action_name
                                                         && vum.Person_Checkecd);

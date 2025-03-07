@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
 {
-    public class AccessMenuDto : BaseDto<AccessMenuDto, AccessMenus>
+    public class AccessMenuDto : BaseDto<AccessMenuDto, UserAccessMenus>
     {
         public Guid? UserId { get; set; }
         public Guid? ListMenuId { get; set; }
@@ -19,7 +19,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
     }
 
-    public class AccessMenuSelectDto : BaseDto<AccessMenuSelectDto, AccessMenus>
+    public class AccessMenuSelectDto : BaseDto<AccessMenuSelectDto, UserAccessMenus>
     {
         public Guid? UserId { get; set; }
         public string UserName { get; set; }
@@ -32,7 +32,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
         public string HostIp { get; set; }
         public virtual Menu ListMenu { get; set; }
         public virtual SanjeshP.RDC.Entities.User.User User { get; set; }
-        public override void CustomMappings(IMappingExpression<AccessMenus, AccessMenuSelectDto> mappingExpression)
+        public override void CustomMappings(IMappingExpression<UserAccessMenus, AccessMenuSelectDto> mappingExpression)
         {
             mappingExpression.ForMember(
                 dest => dest.UserName,
@@ -45,7 +45,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu
                );
             mappingExpression.ForMember(
               dest => dest.MenuTitle,
-              config => config.MapFrom(src => $"{src.ListMenu.Title}")
+              config => config.MapFrom(src => $"{src.Menu.MenuTitle}")
               );
         }
     }

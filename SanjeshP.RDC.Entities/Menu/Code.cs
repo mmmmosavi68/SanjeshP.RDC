@@ -1,28 +1,41 @@
 ﻿using SanjeshP.RDC.Entities.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SanjeshP.RDC.Entities.Menu
 {
-    public class Code : BaseEntity
+    public class Code : BaseEntity<int>
     {
         public Code()
         {
             IsActive = true;
-            IsDelete = false;
-            CreateDate = DateTime.Now;
+            IsDeleted = false;
+            CreatedDate = DateTime.UtcNow;
         }
-        //public int Id { get; set; }
+
+        [Required(ErrorMessage = "عنوان الزامی است")]
+        [MaxLength(100, ErrorMessage = "عنوان نباید بیش از 100 کاراکتر باشد")]
+        [Display(Name = "عنوان")]
         public string Title { get; set; }
+
+        [Display(Name = "شناسه والد")]
+        [ForeignKey("Parent")]
         public int? ParentId { get; set; }
+
+        [Display(Name = "کد استاندارد")]
         public int? StandardCode { get; set; }
+
+        [MaxLength(200, ErrorMessage = "اطلاعات اضافی نباید بیش از 200 کاراکتر باشد")]
+        [Display(Name = "اطلاعات اضافی")]
         public string AdditionalInformation { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsDelete { get; set; }
-        public DateTime CreateDate { get; set; }
-        public Guid Creator { get; set; }
-        public string HostIp { get; set; }
-        public virtual ICollection<Code> InverseParent { get; set; } = new List<Code>();
+
+        [Display(Name = "والد")]
         public virtual Code Parent { get; set; }
+
+        [Display(Name = "فرزندان")]
+        public virtual ICollection<Code> InverseParent { get; set; } = new List<Code>();
+
     }
 }

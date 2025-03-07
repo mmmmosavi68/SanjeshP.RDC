@@ -2,6 +2,7 @@
 using SanjeshP.RDC.Entities.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,9 @@ namespace SanjeshP.RDC.Entities.Menu
 {
     [NotMapped]
     //[IgnoreMigrationAttribute]
-    public class View_UserMenubar : BaseEntity<Guid> /*IIgnoreDependency*/
+    public class View_UserMenubar : BaseEntity /*IIgnoreDependency*/
     {
-        public string Title { get; set; }
+        public string MenuTitle { get; set; }
         public Guid? ParentId { get; set; }
         public int? PageCode { get; set; }
         public string Area { get; set; }
@@ -29,5 +30,18 @@ namespace SanjeshP.RDC.Entities.Menu
         public bool Person_Checkecd { get; set; }
         public bool Group_Checkecd { get; set; }
         public bool disabled { get; set; }
+
+        [NotMapped]
+        public DateTime CreatedDate { get; set; }
+        [NotMapped]
+        public DateTime? UpdatedDate { get; set; }
+        [NotMapped]
+        public bool IsActive { get; set; }
+        [NotMapped]
+        public bool IsDeleted { get; set; }
+        [NotMapped]
+        public Guid CreatedBy { get; set; }
+        [NotMapped]
+        public string HostIp { get; set; }
     }
 }
