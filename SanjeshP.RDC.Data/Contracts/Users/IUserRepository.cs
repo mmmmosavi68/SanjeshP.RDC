@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using SanjeshP.RDC.Data.Contracts.Common;
+using SanjeshP.RDC.DTO.Users;
 
 namespace SanjeshP.RDC.Data.Contracts.Users
 {
@@ -25,5 +26,17 @@ namespace SanjeshP.RDC.Data.Contracts.Users
         Task DeleteUserAsync(User user, CancellationToken cancellationToken);
         Task UpdateUserSecurityStampAsync(User user, CancellationToken cancellationToken);
         Task UpdateUserLastLoginDateAsync(User user, CancellationToken cancellationToken);
+
+
+        // برای افزودن کاربر
+        Task<Guid> AddUserAsync(AddUserDto userDto);
+        // برای ویرایش کاربر
+        Task<bool> UpdateUserAsync(EditUserDto userDto);
+        // برای حذف کاربر
+        Task<bool> DeleteUserAsync(Guid userId);
+        // برای نمایش اطلاعات کاربر
+        Task<UserDetailsDto> GetUserDetailsAsync(Guid userId);
+        // برای نمایش لیست کاربران
+        Task<List<UserListDto>> GetUsersAsync();
     }
 }
