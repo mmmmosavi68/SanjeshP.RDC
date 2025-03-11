@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Users\AddUserDto.cs" />
+    <Compile Remove="Users\EditUserDto.cs" />
+    <Compile Remove="Users\UserDetailsDto.cs" />
+    <Compile Remove="Users\UserListDto.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SanjeshP.RDC.Entities\SanjeshP.RDC.Entities.csproj" />
   </ItemGroup>
 

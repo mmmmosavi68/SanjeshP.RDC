@@ -77,6 +77,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
+            return View();
+        }
+
+        public async Task<IActionResult> UsersList(CancellationToken cancellationToken)
+        {
             var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
             List<RegisterDto> newList = users.Select(user => new RegisterDto
@@ -97,7 +102,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             }).ToList();
 
-            return View(newList);
+            return PartialView("UsersList",newList);
         }
 
         public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)

@@ -26,6 +26,7 @@ namespace SanjeshP.RDC.Data.Repositories.Groups
 
             return TableNoTracking
                     .Where(g => g.IsDeleted != true)
+                    .OrderByDescending(g => g.CreatedDate) // مرتب‌سازی براساس CreatedDate به‌صورت نزولی
                     .Include(g => g.Creator)
                     .ToList();
         }

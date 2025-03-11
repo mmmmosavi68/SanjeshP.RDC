@@ -85,6 +85,11 @@
                             icon: 'fa fa-check',
                             class: 'iziToast-green'
                         });
+                         // این کد PartialView را بارگذاری می‌کند
+                        $("#usersList").load("/Admin/UserS/UsersList", function () {
+                            // حذف اسکلتی جدول بعد از بارگذاری
+                            $(".skeleton-table").remove();
+                        });
                     } else {
                         var errors = response.message.split(' | ');
                         errors.forEach((item) => {

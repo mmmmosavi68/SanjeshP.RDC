@@ -18,6 +18,7 @@ namespace SanjeshP.RDC.Data.Repositories.Menus
             return await TableNoTracking
                           .Where(ll => ll.IsDeleted == false)
                           .Include(rr => rr.MenusAccesses)
+                          .OrderBy(ll => ll.PageCode) // مرتب‌سازی براساس CreatedDate به‌صورت نزولی
                           .ToListAsync(cancellationToken);
         }
     }
