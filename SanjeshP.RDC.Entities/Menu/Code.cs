@@ -12,7 +12,7 @@ namespace SanjeshP.RDC.Entities.Menu
         {
             IsActive = true;
             IsDeleted = false;
-            CreatedDate = DateTime.UtcNow;
+            CreatedDate = DateTime.Now;
         }
 
         [Required(ErrorMessage = "عنوان الزامی است")]

@@ -43,6 +43,20 @@ namespace SanjeshP.RDC.Data
             modelBuilder.AddSequentialGuidForIdConvention();
             modelBuilder.AddGetDateForCreateDateConvention();
             modelBuilder.AddPluralizingTableNameConvention();
+
+            modelBuilder.Entity<User>()
+    .HasOne(u => u.CreatorUser)
+    .WithMany()
+    .HasForeignKey(u => u.CreatorUserId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<User>()
+    .HasOne(u => u.EditorUser)
+    .WithMany()
+    .HasForeignKey(u => u.EditorUserId)
+    .OnDelete(DeleteBehavior.Restrict);
+
         }
 
 

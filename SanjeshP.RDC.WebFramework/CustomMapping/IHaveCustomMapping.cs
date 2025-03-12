@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SanjeshP.RDC.Entities.User;
 
 namespace WebFramework.CustomMapping
 {

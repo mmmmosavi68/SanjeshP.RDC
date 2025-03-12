@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SanjeshP.RDC.DTO.Users
 {
-    public class UserListDto
+    public class UserDetailDto
     {
         public Guid UserId { get; set; }
 
@@ -25,15 +25,22 @@ namespace SanjeshP.RDC.DTO.Users
         public string EmailAddress { get; set; }
 
         [Display(Name = "عنوان نقش")]
-        public string RoleTitle { get; set; } // استخراج از جدول Role
+        public string RoleTitle { get; set; }
 
         [Display(Name = "فعال؟")]
         public bool IsActive { get; set; }
 
         [Display(Name = "وضعیت")]
-        public string IsActiveTitle { get; set; } // استخراج وضعیت به صورت متنی
+        public string IsActiveTitle { get; set; }
 
         [Display(Name = "حذف شده؟")]
         public bool IsDelete { get; set; }
+
+        public DateTime CreateDate { get; set; }
+
+        public Guid Creator { get; set; }
+
+        public string HostIp { get; set; }
     }
+
 }

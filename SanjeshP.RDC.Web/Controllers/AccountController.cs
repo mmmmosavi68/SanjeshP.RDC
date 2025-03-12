@@ -14,7 +14,6 @@ using SanjeshP.RDC.Web.SharedViewModels;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using SanjeshP.RDC.DTO.Users;
 
 namespace SanjeshP.RDC.Web.Controllers
 {

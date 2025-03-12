@@ -23,6 +23,7 @@ using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
 using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
@@ -84,25 +85,23 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         {
             var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
-            List<RegisterDto> newList = users.Select(user => new RegisterDto
+            List<UserViewModel> newList = users.Select(user => new UserViewModel
             {
                 UserId = user.Id,
                 FirstName = user.UserProfiles.Select(p => p.FirstName).FirstOrDefault(),
                 LastName = user.UserProfiles.Select(p => p.LastName).FirstOrDefault(),
                 NationalCode = user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault(),
                 UserName = user.UserName,
-                Password = string.Empty,
                 EmailAddress = user.EmailAddress,
                 PhoneNumber = user.PhoneNumber,
                 UserTypeTitle = user.UserRoles.Select(p => p.Role.RoleNameFa).Last(),
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
-                IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
-                IsDelete = user.IsDeleted
+                IsActiveName = (IsActiveNameType)(user.IsActive ? 1 : 0),
 
             }).ToList();
 
-            return PartialView("UsersList",newList);
+            return PartialView("UsersList", newList);
         }
 
         public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)
@@ -119,22 +118,24 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 {
                     return NotFound();
                 }
-                var registerDto = new RegisterDto
+                var registerDto = new UserDetailViewModel
                 {
                     UserId = user.Id,
                     FirstName = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.FirstName).FirstOrDefault() : null,
                     LastName = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.LastName).FirstOrDefault() : null,
                     NationalCode = user.UserProfiles.Any() ? user.UserProfiles.Select(p => p.NationalCode).FirstOrDefault() : null,
-                    UserTypeTitle = user.UserRoles.Any() ? user.UserRoles.Select(p => p.Role.RoleNameFa).Last() : null,
-                    RoleId = user.UserRoles.Any() ? user.UserRoles.Select(p => p.RoleId).Last() : 0,
                     UserName = user.UserName,
-                    Password = string.Empty,
                     EmailAddress = user.EmailAddress,
                     PhoneNumber = user.PhoneNumber,
+                    UserTypeTitle = user.UserRoles.Any() ? user.UserRoles.Select(p => p.Role.RoleNameFa).Last() : null,
+                    IsActiveName = (IsActiveNameType)(user.IsActive ? 1 : 0),
+                    CreatedByUserName = user.CreatorUser?.UserName,
+                    CreateDate = DateConvertor.ToShamsiDateTime(user.CreatedDate),
+                    EditedByUserName = user.EditorUser?.UserName,
+                    EditDate = (user.EditDate == null || user.EditDate == DateTime.MinValue)? "- - - -": DateConvertor.ToShamsiDateTime(user.EditDate),
+                    RoleId = user.UserRoles.Any() ? user.UserRoles.Select(p => p.RoleId).Last() : 0,
                     IsActive = user.IsActive,
-                    IsActiveTitle = (IsActiveTitleType)(user.IsActive ? 1 : 0),
-                    IsDelete = user.IsDeleted
-
+      
                 };
                 return PartialView("DetailUser", registerDto);
             }
@@ -149,7 +150,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         public IActionResult CreateUser()
         {
             var roles = _eFRepositoryRole.TableNoTracking.ToList();
-            var model = new RegisterDto();
+            var model = new UserCreateViewModel();
             roles.Insert(0, new Role
             {
                 Id = 0,
@@ -160,7 +161,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             return PartialView("CreateUser", model); // تغییر به PartialView
         }
         [HttpPost]
-        public async Task<ApiResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] UserCreateViewModel userCreateViewModel, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
@@ -168,7 +169,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
             var curentUserToken = User.Identity.FindFirstValue("Token");
             var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
-            registertDto = await CheckValidation(registertDto, token.UserId, cancellationToken);
+            userCreateViewModel = await CheckValidation(userCreateViewModel, token.UserId, cancellationToken);
             if (!ModelState.IsValid)
             {
                 var role = _eFRepositoryRole.TableNoTracking.ToList();
@@ -199,31 +200,32 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             User user = new User()
             {
                 Id = Guid.NewGuid(),
-                UserName = registertDto.UserName,
-                NormalizedUserName = registertDto.UserName.FixTextUpper(),
-                EmailAddress = registertDto.EmailAddress,
-                NormalizedEmailAddress = registertDto.EmailAddress.FixTextUpper(),
+                UserName = userCreateViewModel.UserName,
+                NormalizedUserName = userCreateViewModel.UserName.FixTextUpper(),
+                EmailAddress = userCreateViewModel.EmailAddress,
+                NormalizedEmailAddress = userCreateViewModel.EmailAddress.FixTextUpper(),
                 EmailAddressConfirmed = false,
-                PasswordHash = PasswordHelper.HashPasswordBCrypt(registertDto.Password),
+                PasswordHash = PasswordHelper.HashPasswordBCrypt(userCreateViewModel.Password),
                 ConcurrencyStamp = Guid.NewGuid(),
-                PhoneNumber = registertDto.PhoneNumber,
+                PhoneNumber = userCreateViewModel.PhoneNumber,
                 PhoneNumberConfirmed = false,
                 TwoFactorEnabled = false,
                 LockoutEnd = null,
                 LockoutEnabled = false,
                 AccessFailedCount = 0,
                 CreatedBy = token.UserId,
+                CreatorUser = token.User,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString()
             };
 
-            var userProfile = _mapper.Map<UserProfile>(registertDto);
+            var userProfile = _mapper.Map<UserProfile>(userCreateViewModel);
             userProfile.UserId = user.Id;
             userProfile.CreatedBy = user.CreatedBy;
 
             UserRole userRole = new UserRole()
             {
                 UserId = user.Id,
-                RoleId = registertDto.RoleId,
+                RoleId = userCreateViewModel.RoleId,
                 IsActive = true,
                 IsDeleted = false,
                 CreatedDate = DateTime.Now,
@@ -249,7 +251,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             try
             {
                 var roles = _eFRepositoryRole.TableNoTracking.ToList();
-                var model = new RegisterDto();
+                var model = new UserEditViewModel();
                 roles.Insert(0, new Role
                 {
                     Id = 0,
@@ -266,7 +268,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 {
                     return NotFound();
                 }
-                var registerDto = new RegisterDto
+                var userEditViewModel = new UserEditViewModel
                 {
 
                     UserId = user.Id,
@@ -281,7 +283,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     IsActive = user.IsActive,
                 };
 
-                return PartialView("EditUser", registerDto);
+                return PartialView("EditUser", userEditViewModel);
             }
             catch (Exception ex)
             {
@@ -290,13 +292,13 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
         }
         [HttpPost]
-        public async Task<ApiResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] RegisterDto registertDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> EditUser([Bind("UserId,FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] UserEditViewModel userEditViewModel, CancellationToken cancellationToken)
         {
             try
             {
-                if (string.IsNullOrEmpty(registertDto.Password))
+                if (string.IsNullOrEmpty(userEditViewModel.Password))
                 {
-                    ModelState.Remove(nameof(registertDto.Password));
+                    ModelState.Remove(nameof(userEditViewModel.Password));
                 }
 
                 if (!ModelState.IsValid)
@@ -304,40 +306,40 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     return new BadRequestObjectResult(ModelState);
                 }
 
-                var user = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.Id == registertDto.UserId, cancellationToken);
-                var userProfile = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.UserId == registertDto.UserId, cancellationToken);
-                var userRole = await _userRoleReository.Table.AsNoTracking().FirstOrDefaultAsync(ur => ur.UserId == registertDto.UserId, cancellationToken);
+                var user = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userEditViewModel.UserId, cancellationToken);
+                var userProfile = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.UserId == userEditViewModel.UserId, cancellationToken);
+                var userRole = await _userRoleReository.Table.AsNoTracking().FirstOrDefaultAsync(ur => ur.UserId == userEditViewModel.UserId, cancellationToken);
 
                 var curentUserToken = User.Identity.FindFirstValue("Token");
                 var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-                if (user.NormalizedUserName != registertDto.UserName.FixTextUpper())
+                if (user.NormalizedUserName != userEditViewModel.UserName.FixTextUpper())
                 {
-                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedUserName == registertDto.UserName.FixTextUpper(), cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedUserName == userEditViewModel.UserName.FixTextUpper(), cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("UserName", "نام کاربری تکراری است");
                     }
                 }
-                if (user.NormalizedEmailAddress != registertDto.EmailAddress.FixTextUpper())
+                if (user.NormalizedEmailAddress != userEditViewModel.EmailAddress.FixTextUpper())
                 {
-                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedEmailAddress == registertDto.EmailAddress.FixTextUpper(), cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.NormalizedEmailAddress == userEditViewModel.EmailAddress.FixTextUpper(), cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("EmailAddress", "ایمیل تکراری است");
                     }
                 }
-                if (user.PhoneNumber != registertDto.PhoneNumber)
+                if (user.PhoneNumber != userEditViewModel.PhoneNumber)
                 {
-                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.PhoneNumber == registertDto.PhoneNumber, cancellationToken);
+                    var userExist = await _userRepository.Table.AsNoTracking().FirstOrDefaultAsync(u => u.PhoneNumber == userEditViewModel.PhoneNumber, cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("PhoneNumber", "شماره همراه تکراری است");
                     }
                 }
-                if (userProfile.NationalCode != registertDto.NationalCode)
+                if (userProfile.NationalCode != userEditViewModel.NationalCode)
                 {
-                    var userExist = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.NationalCode == registertDto.NationalCode.FixTextUpper(), cancellationToken);
+                    var userExist = await _userProfilesRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.NationalCode == userEditViewModel.NationalCode.FixTextUpper(), cancellationToken);
                     if (userExist != null)
                     {
                         ModelState.AddModelError("PhoneNumber", "کدملی تکراری است");
@@ -356,33 +358,34 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     return new BadRequestObjectResult(ModelState);
                 }
 
-                user.UserName = registertDto.UserName;
-                user.NormalizedUserName = registertDto.UserName.FixTextUpper();
-                user.EmailAddress = registertDto.EmailAddress;
-                user.NormalizedEmailAddress = registertDto.EmailAddress.FixTextUpper();
+                user.UserName = userEditViewModel.UserName;
+                user.NormalizedUserName = userEditViewModel.UserName.FixTextUpper();
+                user.EmailAddress = userEditViewModel.EmailAddress;
+                user.NormalizedEmailAddress = userEditViewModel.EmailAddress.FixTextUpper();
                 user.EmailAddressConfirmed = false;
                 user.ConcurrencyStamp = Guid.NewGuid();
-                user.PhoneNumber = registertDto.PhoneNumber;
+                user.PhoneNumber = userEditViewModel.PhoneNumber;
                 user.PhoneNumberConfirmed = false;
                 user.TwoFactorEnabled = false;
                 user.LockoutEnd = null;
                 user.LockoutEnabled = false;
                 user.AccessFailedCount = 0;
-                user.CreatedBy = token.UserId;
-                user.IsActive = registertDto.IsActive;
+                user.EditorUser = token.User;
+                user.EditDate = DateTime.Now;
+                user.IsActive = userEditViewModel.IsActive;
                 user.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                if (!string.IsNullOrEmpty(registertDto.Password))
+                if (!string.IsNullOrEmpty(userEditViewModel.Password))
                 {
-                    user.PasswordHash = PasswordHelper.HashPasswordBCrypt(registertDto.Password);
+                    user.PasswordHash = PasswordHelper.HashPasswordBCrypt(userEditViewModel.Password);
                 }
 
-                userProfile.FirstName = registertDto.FirstName;
-                userProfile.LastName = registertDto.LastName;
-                userProfile.NationalCode = registertDto.NationalCode;
-                userProfile.IsActive = registertDto.IsActive;
+                userProfile.FirstName = userEditViewModel.FirstName;
+                userProfile.LastName = userEditViewModel.LastName;
+                userProfile.NationalCode = userEditViewModel.NationalCode;
+                userProfile.IsActive = userEditViewModel.IsActive;
                 userProfile.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
 
-                userRole.RoleId = registertDto.RoleId;
+                userRole.RoleId = userEditViewModel.RoleId;
 
                 _userRepository.Attach(user);
                 _userProfilesRepository.Attach(userProfile);
@@ -469,33 +472,33 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
 
         #region بررسی و صحت سنجی
-        private async Task<RegisterDto> CheckValidation(RegisterDto registerDto, Guid CurentUserID, CancellationToken cancellationToken)
+        private async Task<UserCreateViewModel> CheckValidation(UserCreateViewModel userCreateViewModel, Guid CurentUserID, CancellationToken cancellationToken)
         {
-            if (registerDto.RoleId == 0)
+            if (userCreateViewModel.RoleId == 0)
             {
                 ModelState.AddModelError("RoleId", "نوع کاربری را انتخاب کنید");
             }
-            var ExistEamil = await _userRepository.GetUserByEmailAsync(registerDto.EmailAddress.FixTextUpper(), cancellationToken);
+            var ExistEamil = await _userRepository.GetUserByEmailAsync(userCreateViewModel.EmailAddress.FixTextUpper(), cancellationToken);
             if (ExistEamil != null)
             {
                 ModelState.AddModelError("EmailAddress", " Email تکراری است");
             }
-            var ExistUserName = await _userRepository.GetUserByUserNameAsync(registerDto.UserName.FixTextUpper(), cancellationToken);
+            var ExistUserName = await _userRepository.GetUserByUserNameAsync(userCreateViewModel.UserName.FixTextUpper(), cancellationToken);
             if (ExistUserName != null)
             {
                 ModelState.AddModelError("UserName", "نام کاربری تکراری است");
             }
-            var ExistPhoneNumber = await _userRepository.GetUserByPhoneNumberAsync(registerDto.PhoneNumber.FixTextUpper(), cancellationToken);
+            var ExistPhoneNumber = await _userRepository.GetUserByPhoneNumberAsync(userCreateViewModel.PhoneNumber.FixTextUpper(), cancellationToken);
             if (ExistPhoneNumber != null)
             {
                 ModelState.AddModelError("PhoneNumber", " شماره همراه تکراری است");
             }
-            var ExistNationalCode = await _userProfilesRepository.GetProfileByNationalCodeAsync(registerDto.NationalCode.FixTextUpper(), cancellationToken);
+            var ExistNationalCode = await _userProfilesRepository.GetProfileByNationalCodeAsync(userCreateViewModel.NationalCode.FixTextUpper(), cancellationToken);
             if (ExistNationalCode != null)
             {
                 ModelState.AddModelError("NationalCode", " کد ملی تکراری است");
             }
-            return registerDto;
+            return userCreateViewModel;
         }
         #endregion
 

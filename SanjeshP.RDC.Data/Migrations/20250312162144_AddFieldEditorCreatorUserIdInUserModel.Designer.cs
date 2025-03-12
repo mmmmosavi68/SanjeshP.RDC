@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SanjeshP.RDC.Data;
 
 namespace SanjeshP.RDC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312162144_AddFieldEditorCreatorUserIdInUserModel")]
+    partial class AddFieldEditorCreatorUserIdInUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -510,9 +512,6 @@ namespace SanjeshP.RDC.Data.Migrations
 
                     b.Property<Guid?>("CreatorUserId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EditDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("EditorUserId")
                         .HasColumnType("uniqueidentifier");

@@ -5,35 +5,35 @@ using System.Text;
 
 namespace SanjeshP.RDC.DTO.Users
 {
-    public class UserListDto
+    public class UserEditDto
     {
         public Guid UserId { get; set; }
 
+        [Required(ErrorMessage = "{0} را وارد نمایید.")]
         [Display(Name = "نام")]
         public string FirstName { get; set; }
 
+        [Required(ErrorMessage = "{0} را وارد نمایید.")]
         [Display(Name = "نام خانوادگی")]
         public string LastName { get; set; }
 
+        [Required(ErrorMessage = "{0} را وارد نمایید.")]
         [Display(Name = "کد ملی")]
         public string NationalCode { get; set; }
 
+        [Required(ErrorMessage = "{0} را وارد نمایید.")]
         [Display(Name = "نام کاربری")]
         public string UserName { get; set; }
 
         [Display(Name = "ایمیل")]
         public string EmailAddress { get; set; }
 
-        [Display(Name = "عنوان نقش")]
-        public string RoleTitle { get; set; } // استخراج از جدول Role
+        [Display(Name = "نقش")]
+        public int? RoleId { get; set; }
 
         [Display(Name = "فعال؟")]
         public bool IsActive { get; set; }
 
-        [Display(Name = "وضعیت")]
-        public string IsActiveTitle { get; set; } // استخراج وضعیت به صورت متنی
-
-        [Display(Name = "حذف شده؟")]
-        public bool IsDelete { get; set; }
+        public string HostIp { get; set; }
     }
 }

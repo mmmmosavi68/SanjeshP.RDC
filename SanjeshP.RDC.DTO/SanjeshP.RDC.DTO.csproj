@@ -5,19 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Users\AddUserDto.cs" />
-    <Compile Remove="Users\EditUserDto.cs" />
-    <Compile Remove="Users\UserDetailsDto.cs" />
-    <Compile Remove="Users\UserListDto.cs" />
+    <Folder Include="Groups\" />
+    <Folder Include="Menus\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SanjeshP.RDC.Entities\SanjeshP.RDC.Entities.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Groups\" />
-    <Folder Include="Menus\" />
   </ItemGroup>
 
 </Project>

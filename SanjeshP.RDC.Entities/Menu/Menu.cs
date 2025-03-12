@@ -10,7 +10,7 @@ namespace SanjeshP.RDC.Entities.Menu
     {
         public Menu()
         {
-            CreatedDate = DateTime.UtcNow;
+            CreatedDate = DateTime.Now;
             IsActive = true;
             IsDeleted = false;
         }

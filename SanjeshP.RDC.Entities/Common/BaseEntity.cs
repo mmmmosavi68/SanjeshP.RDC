@@ -18,7 +18,7 @@ namespace SanjeshP.RDC.Entities.Common
 
         [Required(ErrorMessage = "تاریخ ایجاد الزامی است")]
         [Display(Name = "تاریخ ایجاد")]
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         [Display(Name = "تاریخ به‌روزرسانی")]
         public DateTime? UpdatedDate { get; set; }

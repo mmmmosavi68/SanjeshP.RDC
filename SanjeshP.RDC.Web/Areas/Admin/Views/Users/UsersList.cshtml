@@ -1,5 +1,5 @@
-﻿@using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
-@model IEnumerable<RegisterDto>
+﻿@using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
+@model IEnumerable<UserViewModel>
 @{
     int i = 1;
 }
@@ -82,7 +82,7 @@
                         @Html.DisplayFor(modelItem => item.UserTypeTitle)
                     </td>
                     <td class="text-center">
-                        @Html.DisplayFor(modelItem => item.IsActiveTitle)
+                        @Html.DisplayFor(modelItem => item.IsActiveName)
                     </td>
                     <td>
                         <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>

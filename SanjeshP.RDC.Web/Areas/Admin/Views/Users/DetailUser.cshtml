@@ -1,4 +1,4 @@
-﻿@model SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User.RegisterDto
+﻿@model SanjeshP.RDC.Web.Areas.Admin.ViewModels.User.UserDetailViewModel
 
 <dl class="row">
     <dt class="col-sm-5">
@@ -44,10 +44,34 @@
         @Html.DisplayFor(model => model.UserTypeTitle)
     </dd>
     <dt class="col-sm-5">
-        @Html.DisplayNameFor(model => model.IsActiveTitle)
+        @Html.DisplayNameFor(model => model.IsActiveName)
     </dt>
     <dd class="col-sm-6">
-        @Html.DisplayFor(model => model.IsActiveTitle)
+        @Html.DisplayFor(model => model.IsActiveName)
+    </dd>
+    <dt class="col-sm-5">
+        @Html.DisplayNameFor(model => model.CreatedByUserName)
+    </dt>
+    <dd class="col-sm-6">
+        @Html.DisplayFor(model => model.CreatedByUserName)
+    </dd>
+    <dt class="col-sm-5">
+        @Html.DisplayNameFor(model => model.CreateDate)
+    </dt>
+    <dd class="col-sm-6">
+        @Html.DisplayFor(model => model.CreateDate)
+    </dd>
+    <dt class="col-sm-5">
+        @Html.DisplayNameFor(model => model.EditedByUserName)
+    </dt>
+    <dd class="col-sm-6">
+        @Html.DisplayFor(model => model.EditedByUserName)
+    </dd>
+    <dt class="col-sm-5">
+        @Html.DisplayNameFor(model => model.EditDate)
+    </dt>
+    <dd class="col-sm-6">
+        @Html.DisplayFor(model => model.EditDate)
     </dd>
 </dl>
 

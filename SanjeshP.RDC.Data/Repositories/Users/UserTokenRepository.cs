@@ -20,12 +20,13 @@ namespace SanjeshP.RDC.Data.Repositories.Users
         public async Task<UserToken> GetUserTokenByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await Table.Where(p => p.Id == id)
+                .Include(p => p.User)
                 .SingleOrDefaultAsync(cancellationToken);
         }
 
         public async Task<List<UserToken>> GetUserTokensByUserIdAsync(Guid userId, CancellationToken cancellationToken)
         {
-            return await Table.Where(p => p.UserId == userId && p.IsDeleted == false).ToListAsync(cancellationToken);
+            return await Table.Where(p => p.UserId == userId && p.IsDeleted == false).Include(p => p.User).ToListAsync(cancellationToken);
         }
 
         public async Task AddUserTokenAsync(UserToken token, CancellationToken cancellationToken, bool saveNow = true)

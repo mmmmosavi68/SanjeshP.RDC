@@ -13,8 +13,8 @@ namespace SanjeshP.RDC.Entities.User
         public User()
         {
             SecurityStamp = Guid.NewGuid();
-            CreatedDate = DateTime.UtcNow;
-            ExpireDate = DateTime.UtcNow.AddYears(1);
+            CreatedDate = DateTime.Now;
+            ExpireDate = DateTime.Now.AddYears(1);
         }
 
         [Required(ErrorMessage = "نام کاربری الزامی است")]
@@ -74,6 +74,17 @@ namespace SanjeshP.RDC.Entities.User
         [Display(Name = "تاریخ انقضاء")]
         public DateTime ExpireDate { get; set; }
 
+        [Required(ErrorMessage = "تاریخ ویرایش الزامی است")]
+        [Display(Name = "تاریخ ویرایش")]
+        public DateTime EditDate { get; set; }
+
+        [Display(Name = "سازنده")]
+        public Guid? CreatorUserId { get; set; }
+
+        [Display(Name = "ویرایش کننده")]
+        public Guid? EditorUserId { get; set; }
+
+        public virtual User EditorUser { get; set; }
         public virtual User CreatorUser { get; set; }
         public virtual ICollection<UserProfile> UserProfiles { get; set; } = new List<UserProfile>();
         public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

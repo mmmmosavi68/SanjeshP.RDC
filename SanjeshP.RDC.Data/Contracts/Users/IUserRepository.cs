@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using SanjeshP.RDC.Data.Contracts.Common;
-using SanjeshP.RDC.DTO.Users;
 
 namespace SanjeshP.RDC.Data.Contracts.Users
 {
@@ -13,7 +12,7 @@ namespace SanjeshP.RDC.Data.Contracts.Users
         Task<IEnumerable<User>> GetAllUsersNoTrackingAsync(CancellationToken cancellationToken);
         Task<IEnumerable<User>> GetAllUsersAsync(CancellationToken cancellationToken);
 
-        Task<User> GetByGuidIdAsync(Guid id,CancellationToken cancellationToken);
+        Task<User> GetByGuidIdAsync(Guid id, CancellationToken cancellationToken);
         Task<User> GetUserByUserNameAsync(string userNameUpper, CancellationToken cancellationToken);
         User GetUserByUserName(string userNameUpper);
         Task<User> GetUserByUserNameAndPasswordAsync(string userName, string passwordHash, CancellationToken cancellationToken);

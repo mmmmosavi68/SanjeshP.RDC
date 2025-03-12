@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SanjeshP.RDC.Data;
 
 namespace SanjeshP.RDC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312161144_AddFieldEditorUserIdInUserModel")]
+    partial class AddFieldEditorUserIdInUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -508,12 +510,6 @@ namespace SanjeshP.RDC.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("CreatorUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EditDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid?>("EditorUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -580,9 +576,9 @@ namespace SanjeshP.RDC.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorUserId");
-
-                    b.HasIndex("EditorUserId");
+                    b.HasIndex("EditorUserId")
+                        .IsUnique()
+                        .HasFilter("[EditorUserId] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -871,15 +867,9 @@ namespace SanjeshP.RDC.Data.Migrations
 
             modelBuilder.Entity("SanjeshP.RDC.Entities.User.User", b =>
                 {
-                    b.HasOne("SanjeshP.RDC.Entities.User.User", "CreatorUser")
-                        .WithMany()
-                        .HasForeignKey("CreatorUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SanjeshP.RDC.Entities.User.User", "EditorUser")
-                        .WithMany()
-                        .HasForeignKey("EditorUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithOne("CreatorUser")
+                        .HasForeignKey("SanjeshP.RDC.Entities.User.User", "EditorUserId");
                 });
 
             modelBuilder.Entity("SanjeshP.RDC.Entities.User.UserProfile", b =>
