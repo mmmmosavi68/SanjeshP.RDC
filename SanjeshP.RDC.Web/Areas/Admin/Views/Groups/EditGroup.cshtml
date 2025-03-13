@@ -1,8 +1,8 @@
-﻿@model SanjeshP.RDC.Web.Areas.Admin.ViewModels.Groups.GroupCreateViewModel
+﻿@model SanjeshP.RDC.Web.Areas.Admin.ViewModels.Groups.GroupEditViewModel
 
 <div class="row">
     <div class="col-md-12">
-        <form id="create-group-form" asp-action="CreateGroup" method="post">
+        <form id="edit-group-form" asp-action="EditGroup" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
 
             <div class="form-group">
@@ -19,8 +19,9 @@
                     </label>
                 </div>
             </div>
+            @Html.HiddenFor(model => model.Id)
             <div class="form-group">
-                <input type="button" id="save-button" value="افزودن گروه" class="btn btn-success" />
+                <input type="button" id="edit-button" value="ویرایش گروه" class="btn btn-warning" />
             </div>
         </form>
     </div>
@@ -31,14 +32,15 @@
 }
 <script>
     $(document).ready(function () {
-        $('#save-button').click(function () {
+        $('#edit-button').click(function () {
             // تنظیم URL مناسب براساس نوع عملیات
-            const actionUrl = '@Url.Action("CreateGroup", "Groups")';
+            const actionUrl = '@Url.Action("EditGroup", "Groups")';
+
             // ارسال اطلاعات فرم به سمت سرور
             $.ajax({
                 url: actionUrl,
                 type: 'POST',
-                data: $('#create-group-form').serialize(),
+                data: $('#edit-group-form').serialize(),
                 success: function (response) {
                     if (response.isSuccess) {
                         // نمایش پیام موفقیت

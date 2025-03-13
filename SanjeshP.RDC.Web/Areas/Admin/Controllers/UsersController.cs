@@ -1,29 +1,20 @@
 ﻿using AutoMapper;
-using AutoMapper.Internal;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
-using SanjeshP.RDC.Common.Exceptions;
-using SanjeshP.RDC.Common.Utilities;
 using SanjeshP.RDC.Convertor;
 using SanjeshP.RDC.Data.Contracts.Common;
 using SanjeshP.RDC.Data.Contracts.Menus;
 using SanjeshP.RDC.Data.Contracts.Users;
-using SanjeshP.RDC.Data.Repositories;
-using SanjeshP.RDC.Entities.Common;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Menu;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
+using SanjeshP.RDC.Web.SharedViewModels.Common;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
@@ -78,6 +69,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
+
             return View();
         }
 
@@ -510,14 +502,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
         public async Task<ActionResult<string>> GetUserAccessMenuItem(Guid userid, CancellationToken cancellationToken)
         {
-            #region Convert ListMenu to ListMenuUserAccessDto for use jstree
+            #region Convert ListMenu to UserAccessMenusViewModel for use jstree
             List<Menu> listMenus = await _menuRepository.GetAllMenusAsync(cancellationToken);
-            List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
+            List<UserAccessMenusViewModel> userAccessMenusViewModel = new List<UserAccessMenusViewModel>();
             foreach (var item in listMenus)
             {
                 if (item.ParentId == null)
                 {
-                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    userAccessMenusViewModel.Add(new UserAccessMenusViewModel
                     {
                         id = item.Id,
                         parent = "#",
@@ -526,7 +518,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 }
                 else
                 {
-                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    userAccessMenusViewModel.Add(new UserAccessMenusViewModel
                     {
                         id = item.Id,
                         parent = item.ParentId.ToString(),
@@ -540,7 +532,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             List<View_UserMenubar> view_UserMenubars = _view_UserMenubarRepository.GetUserAccessMenus(userid, cancellationToken);
             foreach (var item in view_UserMenubars)
             {
-                foreach (var item2 in listMenuUserAccessDtos)
+                foreach (var item2 in userAccessMenusViewModel)
                 {
                     if (item.Id.Equals(item2.id))
                     {
@@ -552,12 +544,12 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             #endregion
 
             #region Add options jstree
-            foreach (var item in listMenuUserAccessDtos)
+            foreach (var item in userAccessMenusViewModel)
             {
                 if (item.Person_Checkecd == true)
                 {
                     var result = true;
-                    foreach (var item2 in listMenuUserAccessDtos)
+                    foreach (var item2 in userAccessMenusViewModel)
                     {
                         if (item2.parent == item.id.ToString())
                         {
@@ -568,11 +560,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
                     if (result)
                     {
-                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
-                        listMenuUserAccessStateDto.selected = true;
-                        listMenuUserAccessStateDto.opened = true;
-                        listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
-                        item.state = listMenuUserAccessStateDto;
+                        UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
+                        userAccessMenusStateViewModel.selected = true;
+                        userAccessMenusStateViewModel.opened = true;
+                        userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
+                        item.state = userAccessMenusStateViewModel;
                         if (item.Group_Checkecd == true)
                         {
                             JStreeAttr jStreeAttr = new JStreeAttr()
@@ -585,11 +577,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     }
                     else
                     {
-                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
-                        listMenuUserAccessStateDto.selected = false;
-                        listMenuUserAccessStateDto.opened = false;
-                        listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
-                        item.state = listMenuUserAccessStateDto;
+                        UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
+                        userAccessMenusStateViewModel.selected = false;
+                        userAccessMenusStateViewModel.opened = false;
+                        userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
+                        item.state = userAccessMenusStateViewModel;
                         if (item.Group_Checkecd == true)
                         {
                             JStreeAttr jStreeAttr = new JStreeAttr()
@@ -604,7 +596,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             }
             #endregion
 
-            var json = JsonConvert.SerializeObject(listMenuUserAccessDtos);
+            var json = JsonConvert.SerializeObject(userAccessMenusViewModel);
             return (json);
         }
         #endregion پایان

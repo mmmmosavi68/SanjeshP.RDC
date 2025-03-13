@@ -83,6 +83,23 @@
             text-align: right;
         }
 
+        table tbody tr {
+            line-height: 1 !important;
+            height: auto !important;
+            padding: 0 !important;
+        }
+
+        table tbody td, table tbody th {
+            padding: 4px !important; /* کاهش فضای داخلی سلول‌ها */
+            vertical-align: middle !important; /* تنظیم متن به وسط از نظر ارتفاع */
+            text-align: center; /* تنظیم متن به وسط از نظر افقی */
+        }
+
+        .dataTables_filter label, .dataTables_length label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -202,7 +219,8 @@
 
     <script>
         $(function () {
-            $('a').tooltip()
+            $('a').tooltip();
+             $('i').tooltip()
         })
         var Toast = Swal.mixin({
             toast: true,

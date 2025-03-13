@@ -23,7 +23,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewModels.User
         public string UserTypeTitle { get; set; }
         [Display(Name = "نوع کاربری")]
         public int? RoleId { get; set; }
-        [Display(Name = "فعال؟")]
+        [Display(Name = "فعال")]
         public bool IsActive { get; set; }
         [Display(Name = "وضعیت ( فعال/غیرفعال)")]
         public IsActiveNameType IsActiveName { get; set; }

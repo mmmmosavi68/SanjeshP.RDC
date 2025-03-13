@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
-using SanjeshP.RDC.Common.MyAttribute;
 using AutoMapper;
-using SanjeshP.RDC.Entities.User;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
 using SanjeshP.RDC.WebFramework.Api;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.ViewModels.User

@@ -1,5 +1,5 @@
-﻿@using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
-@model IEnumerable<GroupSelectDto>
+﻿@using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Groups
+@model IEnumerable<GroupViewModel>
 @{
     ViewData["Title"] = "مدیریت گروه دسترسی‌ها";
     int i = 1;
@@ -9,8 +9,7 @@
     <div class="row mb-3">
         <input type="button" class="btn btn-outline-primary" onclick="CreateGroup()" value="افزودن گروه دسترسی" />
     </div>
-
-    <table class="table table-hover text-center " id="tbl_group">
+    <table class="table table-hover text-center table-striped" id="tbl_group">
         <thead>
             <tr class='trhead'>
                 <th>#</th>
@@ -27,7 +26,7 @@
                     @Html.DisplayNameFor(model => model.CreatorUserName)
                 </th>
                 <th class="text-center">
-                    @Html.DisplayNameFor(model => model.IsActiveTitle)
+                    @Html.DisplayNameFor(model => model.IsActive)
                 </th>
                 <th>عملیات</th>
             </tr>
@@ -51,7 +50,7 @@
                         @Html.DisplayFor(modelItem => item.CreatorUserName)
                     </td>
                     <td class="text-center">
-                        @Html.DisplayFor(modelItem => item.IsActiveTitle)
+                        @Html.DisplayFor(modelItem => item.IsActiveName)
                     </td>
                     <td>
                         <a class="btn btn-sm btn-outline-warning" onclick="EditGroup('@item.Id')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>

@@ -6,25 +6,24 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Admin\Data\**" />
-    <Compile Remove="Areas\Admin\Models\User\**" />
+    <Compile Remove="Areas\Admin\Models\**" />
     <Compile Remove="Models\**" />
     <Compile Remove="Views\Identity\**" />
     <Content Remove="Areas\Admin\Data\**" />
-    <Content Remove="Areas\Admin\Models\User\**" />
+    <Content Remove="Areas\Admin\Models\**" />
     <Content Remove="Models\**" />
     <Content Remove="Views\Identity\**" />
     <EmbeddedResource Remove="Areas\Admin\Data\**" />
-    <EmbeddedResource Remove="Areas\Admin\Models\User\**" />
+    <EmbeddedResource Remove="Areas\Admin\Models\**" />
     <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Views\Identity\**" />
     <None Remove="Areas\Admin\Data\**" />
-    <None Remove="Areas\Admin\Models\User\**" />
+    <None Remove="Areas\Admin\Models\**" />
     <None Remove="Models\**" />
     <None Remove="Views\Identity\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\Admin\Models\DTO_Menu\ListMenuDto.cs" />
     <Compile Remove="Controllers\IdentityController.cs" />
   </ItemGroup>
 

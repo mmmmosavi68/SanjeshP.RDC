@@ -1,7 +1,5 @@
-﻿@* @using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers
-@model IEnumerable<GroupUserViewModel> *@
-@using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
-@model IEnumerable<UserGroupSelectDto>
+﻿@using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers
+@model IEnumerable<GroupUserViewModel>
 
 
 @{
@@ -14,7 +12,7 @@
         <input type="button" class="btn btn-outline-primary" id="@groupId" onclick="AddUserGroup(this.id)" value="افزودن کاربر به گروه" />
     </div>
 
-    <table class="table table-hover text-center" id="tbl_userGroup">
+    <table class="table table-hover text-center table-striped" id="tbl_userGroup">
         <thead>
             <tr class='trhead'>
                 <th>#</th>
@@ -24,7 +22,8 @@
                         <label class="custom-control-label" for="selectAllUserGroup"></label>
                     </div>
                 </th>
-                <th>@Html.DisplayNameFor(model => model.FullName)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+                <th>@Html.DisplayNameFor(model => model.LastName)</th>
                 <th>@Html.DisplayNameFor(model => model.UserName)</th>
                 <th>@Html.DisplayNameFor(model => model.NationalCode)</th>
                 <th>@Html.DisplayNameFor(model => model.GroupName)</th>
@@ -34,20 +33,21 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr id="tr_@(item.Id)">
+                <tr id="tr_@(item.GroupUserId)">
                     <th scope="row">@i</th>
                     <th scope="row">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="@item.Id">
-                            <label class="custom-control-label" for="@item.Id"></label>
+                            <input type="checkbox" class="custom-control-input" id="@item.GroupUserId">
+                            <label class="custom-control-label" for="@item.GroupUserId"></label>
                         </div>
                     </th>
-                    <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
                     <td>@Html.DisplayFor(modelItem => item.UserName)</td>
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
                     <td>@Html.DisplayFor(modelItem => item.GroupName)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-danger" id="@item.Id/@groupId" data-toggle="DeleteUser" title="حذف کاربر">
+                        <a class="btn btn-sm btn-outline-danger" id="@item.GroupUserId/@groupId" data-toggle="DeleteUser" title="حذف کاربر">
                             <i class="fa fa-trash"></i>
                         </a>
                     </td>

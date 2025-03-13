@@ -16,11 +16,9 @@ using SanjeshP.RDC.Data.Contracts.Menus;
 using SanjeshP.RDC.Data.Contracts.Users;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
-using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
 using AutoMapper.QueryableExtensions;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 {
@@ -74,44 +72,38 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         {
             try
             {
-
                 ViewData["groupId"] = groupId;
+                var groupUserViewModel = await _eFRepositoryUserGroup.TableNoTracking
+                                                    .Where(u => !u.IsDeleted && u.GroupId == groupId)
+                                                    .Select(u => new GroupUserViewModel
+                                                    {
+                                                        Id = u.Id,
+                                                        GroupUserId=u.Id,
+                                                        UserId = u.UserId.Value,
+                                                        UserName = u.User.UserName,
+                                                        FirstName = u.User.UserProfiles.Any()
+                                                                   ? u.User.UserProfiles.FirstOrDefault().FirstName: "",
+                                                        LastName = u.User.UserProfiles.Any()
+                                                                   ? u.User.UserProfiles.FirstOrDefault().LastName : "",
+                                                        NationalCode = u.User.UserProfiles.Any()
+                                                                       ? u.User.UserProfiles.FirstOrDefault().NationalCode: "",
+                                                        GroupId = u.GroupId.Value,
+                                                        GroupName = u.Group.GroupName,
+                                                    })
+                                                    .ToListAsync(cancellationToken);
 
-                //var groupUserDtos = await _eFRepositoryUserGroup.TableNoTracking
-                //                                    .Where(u => !u.IsDeleted && u.GroupId == groupId)
-                //                                    .Select(u => new GroupUserDto
-                //                                    {
-                //                                        UserId = u.UserId.Value,
-                //                                        UserName = u.User.UserName,
-                //                                        FullName = u.User.UserProfiles.Any()
-                //                                                   ? u.User.UserProfiles.FirstOrDefault().FirstName + " " + u.User.UserProfiles.FirstOrDefault().LastName
-                //                                                   : "",
-                //                                        NationalCode = u.User.UserProfiles.Any()
-                //                                                       ? u.User.UserProfiles.FirstOrDefault().NationalCode
-                //                                                       : "",
-                //                                        GroupId = u.GroupId.Value,
-                //                                        GroupName = u.Group.GroupName,
-                //                                        CreateDate = u.CreatedDate
-                //                                    })
-                //                                    .ToListAsync(cancellationToken);
+                var groupUserViewModels = groupUserViewModel.Select(dto => new GroupUserViewModel
+                {
+                    GroupUserId = dto.Id,
+                    UserId = dto.UserId,
+                    UserName = dto.UserName,
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    NationalCode = dto.NationalCode,
+                    GroupName = dto.GroupName,
+                }).ToList();
 
-                //var groupUserViewModels = groupUserDtos.Select(dto => new GroupUserViewModel
-                //{
-                //    UserId = dto.UserId,
-                //    UserName = dto.UserName,
-                //    FullName = dto.FullName,
-                //    NationalCode = dto.NationalCode,
-                //    GroupName = dto.GroupName,
-                //    IsActive = dto.IsActive,
-                //    CreateDate = dto.CreateDate
-                //}).ToList();
-
-                var groupUsers = await _eFRepositoryUserGroup.TableNoTracking
-                                            .ProjectTo<UserGroupSelectDto>(_mapper.ConfigurationProvider)
-                                            .Where(u => u.IsDelete == false && u.GroupId.Equals(groupId))
-                                            .ToListAsync(cancellationToken);
-
-                return PartialView("GroupUsersList", groupUsers);
+                return PartialView("GroupUsersList", groupUserViewModel);
             }
             catch (Exception ex)
             {

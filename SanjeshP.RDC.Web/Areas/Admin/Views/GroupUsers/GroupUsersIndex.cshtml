@@ -1,21 +1,42 @@
-﻿<div id="user-group-list">
+﻿@using System.ComponentModel.DataAnnotations
+@using SanjeshP.RDC.Web.Areas.Admin.ViewModels.GroupUsers
+<div id="user-group-list">
     <table class="skeleton-table">
+        <thead>
+            <tr>
+                @{
+                    // لیست فیلدهایی که باید مستثنی شوند
+                    var excludedFields = new List<string> { "UserId", "IsActiveName" };
+
+                    // دریافت تمام خصوصیات مدل
+                    var properties = typeof(GroupUserViewModel).GetProperties();
+                    <th>#</th>
+                    foreach (var property in properties)
+                    {
+                        // چک کردن اینکه آیا فیلد در لیست استثناها هست یا خیر
+                        if (!excludedFields.Contains(property.Name))
+                        {
+                            var displayName = property.GetCustomAttributes(typeof(DisplayAttribute), false)
+                            .Cast<DisplayAttribute>()
+                            .FirstOrDefault()?.Name ?? property.Name;
+                            <th>@displayName</th>
+                        }
+                    }
+                }
+            </tr>
+        </thead>
         <tbody>
             <tr>
-                <td class="skeleton-loading">Loading...</td>
-                <td class="skeleton-loading">Loading...</td>
-                <td class="skeleton-loading">Loading...</td>
-            </tr>
-            <tr>
-                <td class="skeleton-loading">Loading...</td>
-                <td class="skeleton-loading">Loading...</td>
-                <td class="skeleton-loading">Loading...</td>
-            </tr>
-            <!-- Add more rows as needed -->
+                <td colspan="12" class="text-center skeleton-loading">
+                    <div class="spinner-container">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </td>
         </tbody>
     </table>
 </div>
-
 <script>
     $(document).ready(function () {
         // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند

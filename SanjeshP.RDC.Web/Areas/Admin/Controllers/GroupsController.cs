@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +10,11 @@ using SanjeshP.RDC.Data.Contracts.Groups;
 using SanjeshP.RDC.Data.Contracts.Menu;
 using SanjeshP.RDC.Data.Contracts.Menus;
 using SanjeshP.RDC.Data.Contracts.Users;
-using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Group;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Entities.User;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Group;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_User;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Groups;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Menu;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
@@ -78,7 +75,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         {
 
             var groups = _groupsRepository.GetAllGroups();
-            var groupSelectDtos = _mapper.Map<IEnumerable<GroupSelectDto>>(groups);
+            var groupSelectDtos = _mapper.Map<IEnumerable<GroupViewModel>>(groups);
             return PartialView("GroupsList", groupSelectDtos);
         }
 
@@ -90,14 +87,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
 
         [HttpPost] 
-        public async Task<ApiResult> CreateGroup([Bind("GroupName,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> CreateGroup([Bind("GroupName,IsActive")] GroupCreateViewModel groupCreateViewModel, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(groupSelectDto.GroupName))
+            if (string.IsNullOrEmpty(groupCreateViewModel.GroupName))
             {
                 ModelState.AddModelError("GroupName", "لطفا نامگروه را وارد کنید.");
                 return new BadRequestObjectResult(ModelState);
             }
-            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.GroupName.Trim(), cancellationToken);
+            var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupCreateViewModel.GroupName.Trim(), cancellationToken);
             if (existingGroup != null)
             {
                 ModelState.AddModelError("GroupName", "نام گروه تکراری است.");
@@ -109,10 +106,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             Group group = new Group()
             {
                 Id = Guid.NewGuid(),
-                GroupName = groupSelectDto.GroupName.Trim(),
+                GroupName = groupCreateViewModel.GroupName.Trim(),
                 CreatedBy = token.UserId,
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                IsActive = groupSelectDto.IsActive,
+                IsActive = groupCreateViewModel.IsActive,
                 IsDeleted = false,
                 CreatedDate = DateTime.Now,
             };
@@ -124,23 +121,23 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         public IActionResult EditGroup(Guid groupId)
         {
             var group = _groupsRepository.GetById(groupId);
-            var groupDto = _mapper.Map<GroupSelectDto>(group);
-            return PartialView("CreateGroup", groupDto);
+            var groupDto = _mapper.Map<GroupEditViewModel>(group);
+            return PartialView("EditGroup", groupDto);
         }
 
         [HttpPost]
-        public async Task<ApiResult> EditGroup([Bind("Id,GroupName,IsActive")] GroupSelectDto groupSelectDto, CancellationToken cancellationToken)
+        public async Task<ApiResult> EditGroup([Bind("Id,GroupName,IsActive")] GroupEditViewModel groupEditViewModel, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(groupSelectDto.GroupName))
+            if (string.IsNullOrEmpty(groupEditViewModel.GroupName))
             {
-                ModelState.AddModelError("GroupName", "لطفا نامگروه را وارد کنید.");
+                ModelState.AddModelError("GroupName", "لطفا نام گروه را وارد کنید.");
                 return new BadRequestObjectResult(ModelState);
             }
-            var group = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == groupSelectDto.Id, cancellationToken);
+            var group = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.Id == groupEditViewModel.Id, cancellationToken);
 
-            if (group.GroupName != groupSelectDto.GroupName.Trim())
+            if (group.GroupName != groupEditViewModel.GroupName.Trim())
             {
-                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupSelectDto.GroupName.Trim(), cancellationToken);
+                var existingGroup = await _groupsRepository.Table.AsNoTracking().FirstOrDefaultAsync(up => up.GroupName == groupEditViewModel.GroupName.Trim(), cancellationToken);
                 if (existingGroup != null)
                 {
                     ModelState.AddModelError("GroupName", "نام گروه تکراری است.");
@@ -150,10 +147,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             var curentUserToken = User.Identity.FindFirstValue("Token");
             UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-            group.GroupName = groupSelectDto.GroupName.Trim();
+            group.GroupName = groupEditViewModel.GroupName.Trim();
             group.CreatedBy = token.UserId;
             group.HostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            group.IsActive = groupSelectDto.IsActive;
+            group.IsActive = groupEditViewModel.IsActive;
             group.CreatedDate = DateTime.Now;
             _groupsRepository.Update(group);
 
@@ -193,14 +190,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             var curentUserToken = User.Identity.FindFirstValue("Token");
             UserToken token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
 
-            #region Convert ListMenu to ListMenuUserAccessDto for use jstree
+            #region Convert ListMenu to UserAccessMenusViewModel for use jstree
             List<Menu> listMenus = await _menuRepository.GetAllMenusAsync(cancellationToken);
-            List<ListMenuUserAccessDto> listMenuUserAccessDtos = new List<ListMenuUserAccessDto>();
+            List<UserAccessMenusViewModel> listMenuUserAccessDtos = new List<UserAccessMenusViewModel>();
             foreach (var item in listMenus)
             {
                 if (item.ParentId == null)
                 {
-                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    listMenuUserAccessDtos.Add(new UserAccessMenusViewModel
                     {
                         id = item.Id,
                         parent = "#",
@@ -209,7 +206,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 }
                 else
                 {
-                    listMenuUserAccessDtos.Add(new ListMenuUserAccessDto
+                    listMenuUserAccessDtos.Add(new UserAccessMenusViewModel
                     {
                         id = item.Id,
                         parent = item.ParentId.ToString(),
@@ -251,19 +248,19 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
                     if (result)
                     {
-                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
-                        listMenuUserAccessStateDto.selected = true;
-                        listMenuUserAccessStateDto.opened = true;
+                        UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
+                        userAccessMenusStateViewModel.selected = true;
+                        userAccessMenusStateViewModel.opened = true;
                         //listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
-                        item.state = listMenuUserAccessStateDto;
+                        item.state = userAccessMenusStateViewModel;
                     }
                     else
                     {
-                        ListMenuUserAccessStateDto listMenuUserAccessStateDto = new ListMenuUserAccessStateDto();
-                        listMenuUserAccessStateDto.selected = false;
-                        listMenuUserAccessStateDto.opened = false;
+                        UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
+                        userAccessMenusStateViewModel.selected = false;
+                        userAccessMenusStateViewModel.opened = false;
                         //listMenuUserAccessStateDto.disabled = item.Group_Checkecd;
-                        item.state = listMenuUserAccessStateDto;
+                        item.state = userAccessMenusStateViewModel;
                     }
                 }
             }

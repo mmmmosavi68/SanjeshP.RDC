@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SanjeshP.RDC.Data.Contracts.Menus;
 using SanjeshP.RDC.Data.Contracts.Users;
-using SanjeshP.RDC.Web.Areas.Admin.Models.DTO_Menu;
+using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Menu;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
@@ -29,15 +28,15 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
             if (CurentView_UserMenubar == null)
             {
                 // Handle the case where _view_UserMenubar is null
-                return View(new List<MenuDto>());
+                return View(new List<MenuTreeViewModel>());
             }
 
-            List<MenuDto> FinalList = new List<MenuDto>();
+            List<MenuTreeViewModel> FinalList = new List<MenuTreeViewModel>();
             foreach (var item in CurentView_UserMenubar)
             {
                 if (item.ParentId == null)
                 {
-                    FinalList.Add(new MenuDto
+                    FinalList.Add(new MenuTreeViewModel
                     {
                         CssClass = item.CssClass,
                         Icon = item.Icon,
@@ -58,14 +57,14 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
 
             return View(FinalList);
         }
-        private List<MenuDto> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
+        private List<MenuTreeViewModel> GetChildMenu(Guid _id, List<SanjeshP.RDC.Entities.Menu.View_UserMenubar> _List)
         {
-            List<MenuDto> FinalList = new List<MenuDto>();
+            List<MenuTreeViewModel> FinalList = new List<MenuTreeViewModel>();
             foreach (var item in _List)
             {
                 if (item.ParentId == _id)
                 {
-                    FinalList.Add(new MenuDto
+                    FinalList.Add(new MenuTreeViewModel
                     {
                         CssClass = item.CssClass,
                         Icon = item.Icon,
