@@ -6,6 +6,7 @@ namespace SanjeshP.RDC.Common
         public string ElmahPath { get; set; }
         public JwtSettings JwtSettings { get; set; }
         public IdentitySettings IdentitySettings { get; set; }
+        public AuthenticationSettings authenticationSettings { get; set; }
     }
 
     public class IdentitySettings
@@ -26,6 +27,13 @@ namespace SanjeshP.RDC.Common
         public int NotBeforeMinutes { get; set; }
         public int ExpirationMinutes { get; set; }
 
+    }
+
+    public class AuthenticationSettings
+    {
+        public string LoginPath { get; set; }
+        public string LogoutPath { get; set; }
+        public int ExpireTimeSpanInMinutes { get; set; }
     }
 }
 

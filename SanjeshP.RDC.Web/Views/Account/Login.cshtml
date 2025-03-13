@@ -4,7 +4,10 @@
     ViewData["Title"] = "ورود به سامانه";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
+@if (Context.Request.Query["reason"] == "tokenExpired")
+{
+    <p class="text-danger">توکن شما منقضی شده است. لطفاً دوباره وارد شوید.</p>
+}
 <h3 class="title">ورود به سامانه</h3>
 <div class="login-line"></div>
 

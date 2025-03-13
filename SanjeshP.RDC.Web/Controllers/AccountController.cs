@@ -14,6 +14,8 @@ using SanjeshP.RDC.Web.SharedViewModels;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using SanjeshP.RDC.Common;
+using Microsoft.Extensions.Options;
 
 namespace SanjeshP.RDC.Web.Controllers
 {
@@ -24,15 +26,19 @@ namespace SanjeshP.RDC.Web.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ILogger<AccountController> _logger;
         private readonly IUserTokenRepository _userTokenRepository;
-
-        public AccountController(IMapper mapper, IUserRepository userRepository, ILogger<AccountController> logger, IUserTokenRepository userTokenRepository)
+        private readonly SiteSettings _siteSetting;
+        public AccountController(IMapper mapper
+                                , IUserRepository userRepository
+                                , ILogger<AccountController> logger
+                                , IUserTokenRepository userTokenRepository
+                                , IOptionsSnapshot<SiteSettings> siteSetting)
         {
             _mapper = mapper;
             _userRepository = userRepository;
             _logger = logger;
             _userTokenRepository = userTokenRepository;
+            _siteSetting = siteSetting.Value;
         }
-
         #region Login
         [HttpGet]
         public IActionResult Login()
@@ -90,6 +96,10 @@ namespace SanjeshP.RDC.Web.Controllers
                 return View(loginViewModel);
             }
 
+            // حذف تمام توکن های قبلی کاربر - در صورت لاگین هممزان باید اصلاح شود
+            await _userTokenRepository.MarkExpiredTokensAsDeletedAsync(user.Id, cancellationToken);
+
+
             // ساخت توکن و ثبت اطلاعات
             var token = new UserToken
             {
@@ -99,28 +109,28 @@ namespace SanjeshP.RDC.Web.Controllers
                 UserAgent = Request.Headers["User-Agent"].ToString(),
                 IsDeleted = false,
                 CreatedDate = DateTime.Now,
-                ExpirationDate = DateTime.Now.AddMinutes(30),
+                ExpirationDate = DateTime.Now.AddMinutes(_siteSetting.authenticationSettings.ExpireTimeSpanInMinutes),
                 HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown"
             };
 
             await _userTokenRepository.AddUserTokenAsync(token, cancellationToken);
 
             // تعریف Claims
-            var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                            new Claim(ClaimTypes.Name, user.UserProfiles.Any() ? $"{user.UserProfiles.First().FirstName} {user.UserProfiles.First().LastName}" : "No Profile"),
-                            new Claim("RoleID", user.UserRoles.Any() ? user.UserRoles.Last().Role.NormalizedRoleNameEn : "No Role"),
-                            new Claim("RoleNameFa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleNameFa : "No Role"),
-                            new Claim("Token", token.Id.ToString())
-                        };
+            var claims = new List<Claim> 
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserProfiles.Any() ? $"{user.UserProfiles.First().FirstName} {user.UserProfiles.First().LastName}" : "No Profile"),
+                new Claim("RoleID", user.UserRoles.Any() ? user.UserRoles.Last().Role.NormalizedRoleNameEn : "No Role"),
+                new Claim("RoleNameFa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleNameFa : "No Role"),
+                new Claim("Token", token.Id.ToString())
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = false //loginViewModel.RemmeberMe
+                IsPersistent = loginViewModel.RememberMe // برای لاگین ماندگار
             };
 
             // ثبت ورود
@@ -128,7 +138,6 @@ namespace SanjeshP.RDC.Web.Controllers
 
             _logger.LogInformation($"Login succeeded: user {user.UserName} authenticated successfully.");
             return Redirect("/Admin/Home");
-            return RedirectToAction("Index", "Home"); // هدایت به صفحه اصلی مدیریت
         }
         #endregion
 

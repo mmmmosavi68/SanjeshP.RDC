@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using SanjeshP.RDC.Data.Repositories;
 using SanjeshP.RDC.Entities.Menu;
 using SanjeshP.RDC.Data.Contracts.Menus;
+using SanjeshP.RDC.Data.Contracts.Users;
 
 namespace SanjeshP.RDC.WebFramework.UserAuthorization
 {
@@ -30,14 +31,14 @@ namespace SanjeshP.RDC.WebFramework.UserAuthorization
             var tokenClaim = user.FindFirst("token")?.Value;
             if (Guid.TryParse(tokenClaim, out Guid token))
             {
-                //var tokenRepository = context.HttpContext.RequestServices.GetRequiredService<ITokenRepository>();
-                //var haToken = tokenRepository.GetByIdAsync(token, context.HttpContext.RequestAborted).Result;
-                //if (haToken == null || haToken.IsDelete)
-                //{
-                //    context.HttpContext.SignOutAsync().GetAwaiter().GetResult();
-                //    context.HttpContext.Response.Redirect("~/Login/Login");
-                //    return;
-                //}
+                var tokenRepository = context.HttpContext.RequestServices.GetRequiredService<IUserTokenRepository>();
+                var haToken = tokenRepository.GetUserTokenByIdAsync(token, context.HttpContext.RequestAborted).Result;
+                if (haToken == null || haToken.IsDeleted)
+                {
+                    context.HttpContext.SignOutAsync().GetAwaiter().GetResult();
+                    context.HttpContext.Response.Redirect("~/Login/Login");
+                    return;
+                }
             }
             else
             {

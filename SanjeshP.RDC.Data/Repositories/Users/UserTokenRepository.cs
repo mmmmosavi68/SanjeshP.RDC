@@ -66,5 +66,29 @@ namespace SanjeshP.RDC.Data.Repositories.Users
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<UserToken>> GetExpiredTokensAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking.Where(token => token.ExpirationDate < DateTime.Now && !token.IsDeleted)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task MarkExpiredTokensAsDeletedAsync(Guid userId,CancellationToken cancellationToken)
+        {
+            // دریافت توکن‌های منقضی‌شده
+            var expiredTokens = await TableNoTracking
+                .Where(token => token.ExpirationDate < DateTime.Now && !token.IsDeleted && token.UserId==userId)
+                .ToListAsync(cancellationToken);
+
+            // به‌روزرسانی وضعیت توکن‌ها
+            foreach (var token in expiredTokens)
+            {
+                token.IsDeleted = true;
+            }
+
+            // ذخیره تغییرات در پایگاه داده
+            await SaveChangesAsync(cancellationToken);
+        }
+
     }
 }

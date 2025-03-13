@@ -25,6 +25,7 @@ using SanjeshP.RDC.Entities.User;
 using Microsoft.AspNetCore.Http;
 using SanjeshP.RDC.Data.Contracts.Users;
 using SanjeshP.RDC.Data.Repositories.Users;
+using Microsoft.AspNetCore.Authentication;
 
 namespace WebFramework.Configuration
 {
@@ -115,7 +116,7 @@ namespace WebFramework.Configuration
                 //options.CheckPermissionAction = httpContext => httpContext.User.Identity.IsAuthenticated;
             });
         }
-        public static void AddCustomAuthentication(this IServiceCollection services)
+        public static void AddCustomAuthentication(this IServiceCollection services,AuthenticationSettings authenticationSettings, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
             {
@@ -124,13 +125,68 @@ namespace WebFramework.Configuration
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie(options =>
             {
-                options.LoginPath = "/Identity/Login";
-                options.LogoutPath = "/Identity/Login";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.LoginPath = authenticationSettings.LoginPath;
+                options.LogoutPath = authenticationSettings.LogoutPath;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(authenticationSettings.ExpireTimeSpanInMinutes);
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                //options.Events = new CookieAuthenticationEvents { };
+
+                options.Events = new CookieAuthenticationEvents
+                {
+                    // رویداد در صورت شکست احراز هویت
+                    OnRedirectToLogin = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api"))
+                        {
+                            context.Response.Clear();
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            return Task.CompletedTask;
+                        }
+
+                        context.Response.Redirect(context.RedirectUri);
+                        return Task.CompletedTask;
+                    },
+
+                    // رویداد هنگام معتبرسازی کوکی
+                    OnValidatePrincipal = async context =>
+                    {
+                        var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                        var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+
+                        if (claimsIdentity.Claims?.Any() != true)
+                        {
+                            context.RejectPrincipal();
+                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        }
+
+                        var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
+                        {
+                            context.RejectPrincipal();
+                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            return;
+                        }
+
+                        // اگر مقدار userGuid معتبر است، ادامه دهید
+                        var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, userGuid);
+                        if (user == null || !user.IsActive)
+                        {
+                            context.RejectPrincipal();
+                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        }
+                    },
+
+                    // رویداد در زمان چالش
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.Clear();
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+                };
             });
         }
+
+
 
         public static void AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
         {

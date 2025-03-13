@@ -14,12 +14,10 @@ using SanjeshP.RDC.Entities.User;
 using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Menu;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
-using SanjeshP.RDC.Web.SharedViewModels.Common;
 using SanjeshP.RDC.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -67,12 +65,11 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
-        public async Task<IActionResult> Index(CancellationToken cancellationToken)
+        public async Task<IActionResult> UserIndex(CancellationToken cancellationToken)
         {
 
             return View();
         }
-
         public async Task<IActionResult> UsersList(CancellationToken cancellationToken)
         {
             var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
@@ -95,7 +92,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return PartialView("UsersList", newList);
         }
-
         public async Task<IActionResult> DetailUser(Guid userid, CancellationToken cancellationToken)
         {
             try
@@ -152,6 +148,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
             return PartialView("CreateUser", model); // تغییر به PartialView
         }
+
         [HttpPost]
         public async Task<ApiResult> CreateUser([Bind("FirstName,LastName,NationalCode,UserName,Password,EmailAddress,PhoneNumber,RoleId,IsActive")] UserCreateViewModel userCreateViewModel, CancellationToken cancellationToken)
         {

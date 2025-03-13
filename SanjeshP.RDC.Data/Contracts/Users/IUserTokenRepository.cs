@@ -16,5 +16,7 @@ namespace SanjeshP.RDC.Data.Contracts.Users
         Task DeleteUserTokenByIdAsync(Guid id, CancellationToken cancellationToken);
         Task DeleteUserTokensByUserIdAsync(Guid userId, CancellationToken cancellationToken);
         Task GetTokenByCodeAsync(string verificationCode, CancellationToken cancellationToken);
+        Task<List<UserToken>> GetExpiredTokensAsync(CancellationToken cancellationToken);
+        Task MarkExpiredTokensAsDeletedAsync(Guid userId, CancellationToken cancellationToken);
     }
 }
