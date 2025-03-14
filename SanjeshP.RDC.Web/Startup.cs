@@ -4,11 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SanjeshP.RDC.Common;
-using SanjeshP.RDC.Data.Contracts;
-using SanjeshP.RDC.Data.Contracts.Users;
-using SanjeshP.RDC.Data.Repositories;
-using SanjeshP.RDC.Data.Repositories.Users;
-using SanjeshP.RDC.Services.TokenService;
 using SanjeshP.RDC.WebFramework.Configuration;
 using SanjeshP.RDC.WebFramework.Middlewares;
 using WebFramework.Configuration;
@@ -42,9 +37,6 @@ namespace SanjeshP.RDC.Web
             services.AddControllers();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddCustomAuthentication(_siteSetting.authenticationSettings, Configuration);
-
-            // ثبت TokenService در DI
-            services.AddScoped<TokenService>();
 
             //services.AddStackExchangeRedisCache(options =>
             //{

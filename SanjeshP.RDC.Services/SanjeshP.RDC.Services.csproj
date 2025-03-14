@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TokenService\**" />
+    <EmbeddedResource Remove="TokenService\**" />
+    <None Remove="TokenService\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SanjeshP.RDC.Data\SanjeshP.RDC.Data.csproj" />
   </ItemGroup>
 

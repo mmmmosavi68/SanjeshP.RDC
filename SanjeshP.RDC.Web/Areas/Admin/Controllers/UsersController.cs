@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SanjeshP.RDC.Common;
@@ -15,6 +16,7 @@ using SanjeshP.RDC.Security;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.Menu;
 using SanjeshP.RDC.Web.Areas.Admin.ViewModels.User;
 using SanjeshP.RDC.WebFramework.Api;
+using SanjeshP.RDC.WebFramework.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -38,6 +40,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IAccessMenusRepository _accessMenuRepository;
         private readonly IUserRoleRepository _userRoleReository;
+        private readonly IMemoryCache _memoryCache;
         private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -50,7 +53,8 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                                 , IViewUserMenubarRepository view_UserMenubarRepository
                                 , IUserTokenRepository userTokenRepository
                                 , IAccessMenusRepository accessMenuRepository
-                                , IUserRoleRepository userRoleReository)
+                                , IUserRoleRepository userRoleReository
+                                , IMemoryCache memoryCache)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -62,6 +66,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _userTokenRepository = userTokenRepository;
             _accessMenuRepository = accessMenuRepository;
             _userRoleReository = userRoleReository;
+            this._memoryCache = memoryCache;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -71,20 +76,9 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
         }
         public async Task<IActionResult> UsersList(CancellationToken cancellationToken)
         {
-            var userPermissions = new UserPermissions
-            {
-                CanCreateUser = true,
-                CanEditUser = false,
-                CanDeleteUser = false
-            };
-
-            var permissions = new Dictionary<string, bool>
-            {
-                { "CanDetailUser", userPermissions.CanCreateUser },
-                { "CanEditUser", userPermissions.CanEditUser },
-                { "CanDeleteUser", userPermissions.CanDeleteUser },
-            };
-
+            var token = User.Claims.FirstOrDefault(c => c.Type == "Token")?.Value;
+            var hasAccess = _memoryCache.HasAccess(token, "UsersList");
+            ViewData["MemoryCache"] = _memoryCache;
             var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
             List<UserViewModel> newList = users.Select(user => new UserViewModel
@@ -100,7 +94,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
                 IsActiveName = (IsActiveNameType)(user.IsActive ? 1 : 0),
-                UserPermissions = permissions
 
             }).ToList();
 

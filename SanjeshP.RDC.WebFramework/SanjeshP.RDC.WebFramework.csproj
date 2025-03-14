@@ -5,6 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Filters\UserAuthorization\**" />
+    <EmbeddedResource Remove="Filters\UserAuthorization\**" />
+    <None Remove="Filters\UserAuthorization\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Middlewares\AccessChecker.cs" />
+    <Compile Remove="Middlewares\AccessControlMiddleware.cs" />
+    <Compile Remove="Middlewares\AccessService.cs" />
+    <Compile Remove="Middlewares\RedisCacheService.cs" />
+    <Compile Remove="Middlewares\TokenValidationMiddleware.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="ElmahCore" Version="2.1.2" />
