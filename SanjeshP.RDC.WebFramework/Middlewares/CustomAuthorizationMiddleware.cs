@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using SanjeshP.RDC.Common;
 using SanjeshP.RDC.Data.Contracts.Menus;
 using SanjeshP.RDC.Data.Contracts.Users;
 using System;
@@ -17,10 +19,12 @@ namespace SanjeshP.RDC.WebFramework.Middlewares
     public class CustomAuthorizationMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly IMemoryCache _memoryCache;
 
-        public CustomAuthorizationMiddleware(RequestDelegate next)
+        public CustomAuthorizationMiddleware(RequestDelegate next, IMemoryCache memoryCache)
         {
             _next = next;
+            _memoryCache = memoryCache;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -69,22 +73,61 @@ namespace SanjeshP.RDC.WebFramework.Middlewares
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (Guid.TryParse(userIdClaim, out Guid userId))
             {
-                var userMenubarRepository = context.RequestServices.GetRequiredService<IViewUserMenubarRepository>();
-                var result = userMenubarRepository.GetUserAccessMenus(userId, context.RequestAborted);
-
                 var actionName = context.GetRouteValue("action")?.ToString();
                 var controllerName = context.GetRouteValue("controller")?.ToString();
 
-                var hasPermission = result.Any(vum =>
-                    vum.ControllerName == controllerName &&
-                    vum.ActionName == actionName &&
-                    vum.Person_Checkecd);
+                #region بررسی سطح دسترسی مستقیم از بانک اطلاعاتی 
+                //var userMenubarRepository = context.RequestServices.GetRequiredService<IViewUserMenubarRepository>();
+                //var result = userMenubarRepository.GetUserAccessMenus(userId, context.RequestAborted);
+                //var hasPermission = result.Any(vum =>
+                //    vum.ControllerName == controllerName &&
+                //    vum.ActionName == actionName &&
+                //    (vum.Person_Checkecd || vum.Group_Checkecd));
+                //if (!hasPermission)
+                //{
+                //    if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                //    {
+                //        // درخواست AJAX برای PartialView
+                //        context.Response.Clear();
+                //        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                //        await context.Response.WriteAsync("شما مجوز دسترسی به این بخش را ندارید.");
+                //    }
+                //    else
+                //    {
+                //        // هدایت به صفحه مناسب برای View
+                //        context.Response.Redirect("/SharedError/AccessDenied");
+                //    }
+                //    return;
+                //}
+                #endregion
 
-                if (!hasPermission)
+                #region بررسی سطح دسترسی به وسیله  MemoryCache 
+                var cacheKey = $"UserPermissions_{tokenClaim}";
+                if (_memoryCache.TryGetValue(cacheKey, out List<UserAccessViewModel> cachedData))
                 {
-                    context.Response.Redirect("/Account/Login"); // هدایت کاربر به صفحه بدون دسترسی
-                    return;
+                    var hasPermission = cachedData.Any(vum =>
+                        vum.ControllerName == controllerName &&
+                        vum.ActionName == actionName &&
+                        (vum.Person_Checkecd || vum.Group_Checkecd));
+
+                    if (!hasPermission)
+                    {
+                        if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        {
+                            // درخواست AJAX برای PartialView
+                            context.Response.Clear();
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            await context.Response.WriteAsync("شما مجوز دسترسی به این بخش را ندارید.");
+                        }
+                        else
+                        {
+                            // هدایت به صفحه مناسب برای View
+                            context.Response.Redirect("/SharedError/AccessDenied");
+                        }
+                        return;
+                    }
                 }
+                #endregion
             }
             else
             {

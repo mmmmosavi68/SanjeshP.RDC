@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
+using SanjeshP.RDC.Common;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SanjeshP.RDC.Web.Areas.Admin.ViewModels.User
 {
@@ -27,5 +30,6 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewModels.User
         public bool IsActive { get; set; }
         [Display(Name = "وضعیت ( فعال/غیرفعال)")]
         public IsActiveNameType IsActiveName { get; set; }
+        public Dictionary<string, bool> UserPermissions { get; set; } // مدیریت دسترسی‌ها بهینه‌تر
     }
 }

@@ -6,6 +6,7 @@
 
 <div class="bg-light p-4 rounded ">
     <h3>لیست کاربران</h3>
+
     <div class="row mb-3">
         <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر" />
     </div>
@@ -85,10 +86,21 @@
                         @Html.DisplayFor(modelItem => item.IsActiveName)
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
-                        <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.UserId')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
-                        <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                        @if (item.UserPermissions["CanDetailUser"])
+                        {
+                            <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
+                        }
+                        @if (item.UserPermissions["CanEditUser"])
+                        {
+                            <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.UserId')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                        }
+                        @if (item.UserPermissions["CanDeleteUser"])
+                        {
+                            <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                        }
+
                         <a class="btn btn-sm btn-outline-dark" onclick="AccessMenu('@item.UserId')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+
                     </td>
                 </tr>
                 i++;
@@ -187,7 +199,7 @@
                                     title: response.message,
                               })
                         });
-                        
+
                         // این کد PartialView را بارگذاری می‌کند
                         $("#usersList").load("/Admin/UserS/UsersList", function () {
                             // حذف اسکلتی جدول بعد از بارگذاری

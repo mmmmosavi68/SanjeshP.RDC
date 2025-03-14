@@ -16,6 +16,10 @@ using System;
 using System.Linq;
 using SanjeshP.RDC.Common;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Caching.Memory;
+using SanjeshP.RDC.Data.Contracts.Menus;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Pipelines.Sockets.Unofficial.Arenas;
 
 namespace SanjeshP.RDC.Web.Controllers
 {
@@ -26,19 +30,27 @@ namespace SanjeshP.RDC.Web.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ILogger<AccountController> _logger;
         private readonly IUserTokenRepository _userTokenRepository;
+        private readonly IMemoryCache _memoryCache;
+        private readonly IViewUserMenubarRepository _viewUserMenubarRepository;
         private readonly SiteSettings _siteSetting;
         public AccountController(IMapper mapper
                                 , IUserRepository userRepository
                                 , ILogger<AccountController> logger
                                 , IUserTokenRepository userTokenRepository
-                                , IOptionsSnapshot<SiteSettings> siteSetting)
+                                , IOptionsSnapshot<SiteSettings> siteSetting
+                                , IMemoryCache memoryCache
+                                , IViewUserMenubarRepository viewUserMenubarRepository)
         {
             _mapper = mapper;
             _userRepository = userRepository;
             _logger = logger;
             _userTokenRepository = userTokenRepository;
+            _memoryCache = memoryCache;
+            _viewUserMenubarRepository = viewUserMenubarRepository;
             _siteSetting = siteSetting.Value;
         }
+
+
         #region Login
         [HttpGet]
         public IActionResult Login()
@@ -116,7 +128,7 @@ namespace SanjeshP.RDC.Web.Controllers
             await _userTokenRepository.AddUserTokenAsync(token, cancellationToken);
 
             // تعریف Claims
-            var claims = new List<Claim> 
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserProfiles.Any() ? $"{user.UserProfiles.First().FirstName} {user.UserProfiles.First().LastName}" : "No Profile"),
@@ -124,6 +136,32 @@ namespace SanjeshP.RDC.Web.Controllers
                 new Claim("RoleNameFa", user.UserRoles.Any() ? user.UserRoles.First().Role.RoleNameFa : "No Role"),
                 new Claim("Token", token.Id.ToString())
             };
+
+
+            #region ذخیره سطح دسترسی کاربر در memoryCache
+            var userPermissions = _viewUserMenubarRepository.GetUserAccessMenus(user.Id, cancellationToken);
+            var cacheKey = $"UserPermissions_{token.Id}";
+            var accessData = userPermissions.Select(x => new UserAccessViewModel
+            {
+                MenuTitle = x.MenuTitle ?? "Default Title", // مقدار پیش‌فرض برای null
+                PageCode = x.PageCode.HasValue ? (int)x.PageCode : 0, // استفاده از مقدار پیش‌فرض
+                SowMenu = x.ShowMenu ?? false, // مقدار پیش‌فرض برای bool
+                CssClass = x.CssClass ?? "default-class",
+                Icon = x.Icon ?? "default-icon",
+                Area = x.Area ?? "default-area",
+                ControllerName = x.ControllerName ?? "default-controller",
+                ActionName = x.ActionName ?? "default-action",
+                Person_Checkecd = x.Person_Checkecd,
+                Group_Checkecd = x.Group_Checkecd,
+                Disabled = x.disabled,
+                IsParent = x.IsParent,
+                FirstName = user.UserProfiles.FirstOrDefault()?.FirstName ?? "Default FirstName",
+                LastName = user.UserProfiles.FirstOrDefault()?.LastName ?? "Default LastName",
+                RoleNameFa = user.UserRoles.FirstOrDefault()?.Role?.RoleNameFa ?? "Default Role"
+            }).ToList();
+
+            _memoryCache.Set(cacheKey, accessData, TimeSpan.FromMinutes(30));
+            #endregion
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);

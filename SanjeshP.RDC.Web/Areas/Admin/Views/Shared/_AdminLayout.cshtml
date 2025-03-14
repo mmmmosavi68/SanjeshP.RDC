@@ -262,55 +262,71 @@
         let modalCount = 0;
 
         function openModal(title, url, isLarge = false) {
-          modalCount++;
+            modalCount++;
 
-          const modalId = `dynamicModal${modalCount}`;
-          const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
+            const modalId = `dynamicModal${modalCount}`;
+            const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
 
-          const modalTemplate = `
-            <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="${modalDialogClass}">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="align-content-end">
-                                <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
-                            </div>
-                            <div class="align-content-start">
-                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
-                            </div>
-                        </div>
-                        <div class="modal-body" id="body_${modalId}">
-                            <div class="row align-items-center">
-                                <div class="col-md-12">
-                                    <span>در حال بارگزاری</span>
+            const modalTemplate = `
+                <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="${modalDialogClass}">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <div class="align-content-end">
+                                    <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
                                 </div>
-                                <div class="col-md-12">
-                                    <img src="~/img/background/2.svg" />
+                                <div class="align-content-start">
+                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                            <div class="modal-body" id="body_${modalId}">
+                                <div class="row align-items-center">
+                                    <div class="col-md-12">
+                                        <span>در حال بارگزاری</span>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <img src="~/img/background/2.svg" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-          `;
+            `;
 
-          document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
-          $(`#${modalId}`).modal('show');
+            document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
+            $(`#${modalId}`).modal('show');
 
-          // Clean the previous content
-          $(`#${modalId}`).on('hidden.bs.modal', function () {
-            $(this).remove();
-          });
-                 // Make the modal draggable
-        $(`#${modalId} .modal-dialog`).draggable({
-          handle: ".modal-header"
-        });
-          // Load the content dynamically
-          $(`#body_${modalId}`).load(url);
+            // Clean the previous content
+            $(`#${modalId}`).on('hidden.bs.modal', function () {
+                $(this).remove();
+            });
+
+            // Make the modal draggable
+            $(`#${modalId} .modal-dialog`).draggable({
+                handle: ".modal-header"
+            });
+
+            // Load the content dynamically
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function(data) {
+                    $(`#body_${modalId}`).html(data);
+                },
+                error: function(xhr) {
+                    if (xhr.status === 403) {
+                        $(`#body_${modalId}`).html('<div class="alert alert-danger">شما مجوز دسترسی به این بخش را ندارید.</div>');
+                    } else {
+                        $(`#body_${modalId}`).html('<div class="alert alert-danger">خطایی رخ داده است. لطفاً دوباره تلاش کنید.</div>');
+                    }
+                }
+            });
         }
+
 
 
     </script>

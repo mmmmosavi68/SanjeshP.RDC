@@ -67,11 +67,24 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> UserIndex(CancellationToken cancellationToken)
         {
-
-            return View();
+                    return View();
         }
         public async Task<IActionResult> UsersList(CancellationToken cancellationToken)
         {
+            var userPermissions = new UserPermissions
+            {
+                CanCreateUser = true,
+                CanEditUser = false,
+                CanDeleteUser = false
+            };
+
+            var permissions = new Dictionary<string, bool>
+            {
+                { "CanDetailUser", userPermissions.CanCreateUser },
+                { "CanEditUser", userPermissions.CanEditUser },
+                { "CanDeleteUser", userPermissions.CanDeleteUser },
+            };
+
             var users = await _userRepository.GetAllUsersNoTrackingAsync(cancellationToken);
 
             List<UserViewModel> newList = users.Select(user => new UserViewModel
@@ -87,6 +100,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                 RoleId = user.UserRoles.Select(p => p.RoleId).Last(),
                 IsActive = user.IsActive,
                 IsActiveName = (IsActiveNameType)(user.IsActive ? 1 : 0),
+                UserPermissions = permissions
 
             }).ToList();
 
@@ -120,10 +134,10 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
                     CreatedByUserName = user.CreatorUser?.UserName,
                     CreateDate = DateConvertor.ToShamsiDateTime(user.CreatedDate),
                     EditedByUserName = user.EditorUser?.UserName,
-                    EditDate = (user.EditDate == null || user.EditDate == DateTime.MinValue)? "- - - -": DateConvertor.ToShamsiDateTime(user.EditDate),
+                    EditDate = (user.EditDate == null || user.EditDate == DateTime.MinValue) ? "- - - -" : DateConvertor.ToShamsiDateTime(user.EditDate),
                     RoleId = user.UserRoles.Any() ? user.UserRoles.Select(p => p.RoleId).Last() : 0,
                     IsActive = user.IsActive,
-      
+
                 };
                 return PartialView("DetailUser", registerDto);
             }

@@ -65,7 +65,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.Controllers
             _view_UserMenubarRepository = view_UserMenubarRepository;
             _accessMenusGroupRepository = accessMenusGroupRepository;
         }
-        public IActionResult Index()
+        public IActionResult GroupsIndex()
         {
             return View();
         }

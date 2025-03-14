@@ -113,8 +113,14 @@ namespace SanjeshP.RDC.Web
                     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute(
+                    name: "SharedError",
+                    pattern: "SharedError/{action=NotFound}",
+                    defaults: new { controller = "SharedError" });
+
+                endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Account}/{action=Login}/{id?}");
+
             });
 
         }

@@ -62,7 +62,7 @@ namespace SanjeshP.RDC.Web.Areas.Admin.ViewComponents
             List<MenuTreeViewModel> FinalList = new List<MenuTreeViewModel>();
             foreach (var item in _List)
             {
-                if (item.ParentId == _id)
+                if (item.ParentId == _id && (item.Person_Checkecd==true || item.Group_Checkecd==true))
                 {
                     FinalList.Add(new MenuTreeViewModel
                     {
